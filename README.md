@@ -1,4 +1,8 @@
 <p align="center">
+  <img width="75%" src="./assets/cyberjess-banner.png" />
+</p>
+
+<p align="center">
   <code>ACCESS GRANTED</code><br>
   <code>LOADING CYBERJESS-LAB...</code>
 </p>
@@ -17,7 +21,9 @@
 
 Welcome to **CyberJess-Lab** — a personal cybersecurity environment where defense meets offense, and theory meets hands-on experimentation.
 
-This lab is a living system designed to explore, break, analyze, and rebuild.
+This lab is a space to explore systems, analyze behavior, and understand how things break.
+
+Built through curiosity, experimentation, and a constant drive to improve detection and analysis skills.
 
 ---
 
@@ -60,15 +66,15 @@ This lab is built on:
 ```
 🛡️ Detection & Monitoring
 
-Defender XDR • Microsoft Sentinel • KQL
+Defender XDR • Microsoft Sentinel • KQL • Elastic Stack (Elasticsearch, Logstash, Kibana, Winlogbeat)
 
 🌐 Network & Traffic Analysis
 
-Wireshark • Zeek • Suricata • tcpdump
+Wireshark • Zeek • Suricata • tcpdump • Firewall analysis • Network traffic inspection
 
 💻 Systems & Scripting
 
-Linux • PowerShell • Python
+Linux • Windows • PowerShell • Python 
 
 🎯 Offensive & Labs
 
@@ -81,6 +87,20 @@ n8n • API Integration • Automation
 > Tools evolve. Mindset remains.
 
 ---
+## 🗺️ TOOL MAP
+
+```diff
+> accessing external dashboard...
+> loading cyberjess workspace...
+> connection established
+```
+
+My cybersecurity environment is built around a constantly evolving ecosystem of tools, workflows, and resources.
+
+🔗 **Personal dashboard**: [Start.me](https://start.me/p/ARen4w/start-page)
+
+> Always evolving. Always refining.  
+
 
 ## 🔗 NETWORK
 
@@ -103,18 +123,23 @@ No production or organizational data is exposed.
 
 ## 👾 IDENTITY
 
-**CyberJess**  
-Cybersecurity • Creativity • Exploration  
-
-Exploring the intersection of:
-- security  
-- systems  
-- and creativity  
+```diff
+> identity loaded: cyberjess
+> observing systems
+> analyzing patterns
+> challenging assumptions
+> correlating signals
+> detecting anomalies
+> understanding behavior
+> refining continuously  
+```
 
 ---
 
 ## 🌌 STATUS
 
+```diff
 > Lab active.  
 > Signals monitored.  
 > Threats evolving.
+```
