@@ -10,6 +10,13 @@
 
 ---
 
+## Languages
+
+- GB English: [README.md](./README.md)
+- FR Francais: [README_fr.md](./README_fr.md)
+
+---
+
 ## BOOT SEQUENCE
 
 ```diff
@@ -39,8 +46,6 @@ This project is inspired in part by the OWASP SocialOSINTAgent approach:
 
 ## AGENT DESCRIPTION
 
-### English
-
 `OSINT AI Agent` is a bilingual, Kali-friendly OSINT project designed to orchestrate multiple open-source tools through a controlled investigation pipeline.
 
 It helps collect, expand, correlate, and document findings related to:
@@ -54,22 +59,6 @@ It helps collect, expand, correlate, and document findings related to:
 
 The AI layer is used to structure the workflow, widen pivots, and help summarize results.  
 It is not meant to replace analyst judgment.
-
-### Francais
-
-`OSINT AI Agent` est un projet OSINT bilingue, adapte a Kali Linux, concu pour orchestrer plusieurs outils open source dans une chaine d'investigation controlee.
-
-Il aide a collecter, enrichir, correler et documenter des resultats lies a:
-
-- reseaux sociaux
-- usernames et alias
-- noms de personnes
-- numeros de telephone
-- donnees d'entreprise et registres publics
-- domaines et exposition d'infrastructure
-
-La couche IA sert a structurer le workflow, elargir les pivots et aider a la synthese.  
-Elle ne remplace pas la validation de l'analyste.
 
 ---
 
@@ -250,6 +239,7 @@ Setup references:
 AI-Agent/
 `-- OSINT-AI-Agent/
     |-- README.md
+    |-- README_fr.md
     |-- config/
     |   |-- osint_sources_registry.yaml
     |   `-- profiles/
