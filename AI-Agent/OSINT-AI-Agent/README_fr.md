@@ -226,9 +226,9 @@ pipx install bbot
 
 SpiderFoot et PhoneInfoga restent supportes comme ajouts optionnels.
 
-References setup:
+References de configuration:
 
-- [English Kali Setup](./docs/en/KALI_SETUP.md)
+- [Guide Kali en anglais](./docs/en/KALI_SETUP.md)
 - [Guide Kali en francais](./docs/fr/KALI_SETUP.md)
 
 ---
@@ -252,15 +252,15 @@ AI-Agent/
     `-- templates/
 ```
 
-References cle:
+References cles:
 
-- [English Project Overview](./docs/en/PROJECT_OVERVIEW.md)
+- [Apercu du projet en anglais](./docs/en/PROJECT_OVERVIEW.md)
 - [Apercu du projet en francais](./docs/fr/PROJECT_OVERVIEW.md)
-- [English Architecture](./docs/en/ARCHITECTURE.md)
+- [Architecture en anglais](./docs/en/ARCHITECTURE.md)
 - [Architecture en francais](./docs/fr/ARCHITECTURE.md)
-- [English Max Coverage Strategy](./docs/en/MAX_COVERAGE_STRATEGY.md)
+- [Strategie Max Coverage en anglais](./docs/en/MAX_COVERAGE_STRATEGY.md)
 - [Strategie Max Coverage en francais](./docs/fr/MAX_COVERAGE_STRATEGY.md)
-- [English Canada Localization](./docs/en/CANADA_LOCALIZATION.md)
+- [Localisation Canada en anglais](./docs/en/CANADA_LOCALIZATION.md)
 - [Localisation Canada en francais](./docs/fr/CANADA_LOCALIZATION.md)
 
 ---
