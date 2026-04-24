@@ -37,6 +37,42 @@ This project is inspired in part by the OWASP SocialOSINTAgent approach:
 
 ---
 
+## AGENT DESCRIPTION
+
+### English
+
+`OSINT AI Agent` is a bilingual, Kali-friendly OSINT project designed to orchestrate multiple open-source tools through a controlled investigation pipeline.
+
+It helps collect, expand, correlate, and document findings related to:
+
+- social media
+- usernames and aliases
+- person names
+- phone numbers
+- company and registry data
+- domains and infrastructure exposure
+
+The AI layer is used to structure the workflow, widen pivots, and help summarize results.  
+It is not meant to replace analyst judgment.
+
+### Francais
+
+`OSINT AI Agent` est un projet OSINT bilingue, adapte a Kali Linux, concu pour orchestrer plusieurs outils open source dans une chaine d'investigation controlee.
+
+Il aide a collecter, enrichir, correler et documenter des resultats lies a:
+
+- reseaux sociaux
+- usernames et alias
+- noms de personnes
+- numeros de telephone
+- donnees d'entreprise et registres publics
+- domaines et exposition d'infrastructure
+
+La couche IA sert a structurer le workflow, elargir les pivots et aider a la synthese.  
+Elle ne remplace pas la validation de l'analyste.
+
+---
+
 ## MISSION PROFILE
 
 This agent is designed to support investigations involving:
@@ -203,8 +239,8 @@ SpiderFoot and PhoneInfoga remain supported as optional additions.
 
 Setup references:
 
-- [docs/en/KALI_SETUP.md](docs/en/KALI_SETUP.md)
-- [docs/fr/KALI_SETUP.md](docs/fr/KALI_SETUP.md)
+- [English Kali Setup](./docs/en/KALI_SETUP.md)
+- [Guide Kali en francais](./docs/fr/KALI_SETUP.md)
 
 ---
 
@@ -228,14 +264,14 @@ AI-Agent/
 
 Key references:
 
-- [docs/en/PROJECT_OVERVIEW.md](docs/en/PROJECT_OVERVIEW.md)
-- [docs/fr/PROJECT_OVERVIEW.md](docs/fr/PROJECT_OVERVIEW.md)
-- [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md)
-- [docs/fr/ARCHITECTURE.md](docs/fr/ARCHITECTURE.md)
-- [docs/en/MAX_COVERAGE_STRATEGY.md](docs/en/MAX_COVERAGE_STRATEGY.md)
-- [docs/fr/MAX_COVERAGE_STRATEGY.md](docs/fr/MAX_COVERAGE_STRATEGY.md)
-- [docs/en/CANADA_LOCALIZATION.md](docs/en/CANADA_LOCALIZATION.md)
-- [docs/fr/CANADA_LOCALIZATION.md](docs/fr/CANADA_LOCALIZATION.md)
+- [English Project Overview](./docs/en/PROJECT_OVERVIEW.md)
+- [Apercu du projet en francais](./docs/fr/PROJECT_OVERVIEW.md)
+- [English Architecture](./docs/en/ARCHITECTURE.md)
+- [Architecture en francais](./docs/fr/ARCHITECTURE.md)
+- [English Max Coverage Strategy](./docs/en/MAX_COVERAGE_STRATEGY.md)
+- [Strategie Max Coverage en francais](./docs/fr/MAX_COVERAGE_STRATEGY.md)
+- [English Canada Localization](./docs/en/CANADA_LOCALIZATION.md)
+- [Localisation Canada en francais](./docs/fr/CANADA_LOCALIZATION.md)
 
 ---
 
