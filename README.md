@@ -106,6 +106,7 @@ My cybersecurity environment is built around a constantly evolving ecosystem of 
 
 Specialized modules:
 
+- 🧠 OSINT AI Agent → [OSINT-AI-Agent](https://github.com/jesscybersec/OSINT-AI-Agent)
 - 🛡️ KQL Detections → (coming soon)
 - 🧪 Malware Analysis → (coming soon)
 - 🎯 Pentest Labs → (coming soon)
