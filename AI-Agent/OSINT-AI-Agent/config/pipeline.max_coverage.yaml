@@ -1,0 +1,25 @@
+pipeline:
+  mode: passive
+  output_directory: reports
+  raw_directory: data/raw
+  normalized_directory: data/normalized
+  final_directory: data/final
+
+tools:
+  amass: true
+  bbot: true
+  theharvester: true
+  spiderfoot: true
+  social: true
+  identity: true
+  company_registry: true
+
+report:
+  format:
+    - markdown
+  include_summary: true
+  include_findings: true
+  include_observables: true
+  languages:
+    - en
+    - fr

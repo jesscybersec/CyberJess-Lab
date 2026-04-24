@@ -1,0 +1,25 @@
+profile:
+  id: canada_localization
+  name: Canada Localization
+  description: Canada-focused profile for people, company, and location-heavy OSINT.
+  priorities:
+    - person_name
+    - company
+    - phone
+    - media_geospatial
+  tags:
+    - canada
+    - geo
+    - province
+    - municipality
+  source_hubs:
+    - https://start.me/p/aLe0vp/osint-resources-in-canada
+    - https://start.me/p/L1rEYQ/osint4all
+    - https://github.com/jivoi/awesome-osint
+    - https://osintframework.com/
+  recommended_steps:
+    - Start with person or company pivots and attach a province tag early.
+    - Use company and registry pivots before social correlation when the target is organizational.
+    - Use geospatial and local-media pivots when a city, province, or municipality is known.
+    - Treat Start.me Canada as a curated research hub for manual expansion of local sources.
+

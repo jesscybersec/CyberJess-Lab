@@ -1,0 +1,41 @@
+# OSINT Report
+
+## Executive Summary
+
+- Target: {{ report.target }}
+- Generated at: {{ report.generated_at }}
+- Mode: {{ report.mode }}
+- Total findings: {{ report.findings | length }}
+
+## Findings
+
+{% if report.findings %}
+{% for finding in report.findings %}
+### {{ finding.title }}
+
+- Severity: {{ finding.severity }}
+- Source: {{ finding.source }}
+- Confidence: {{ finding.confidence }}
+- Description: {{ finding.description }}
+
+{% endfor %}
+{% else %}
+No findings were recorded.
+{% endif %}
+
+## Observables
+
+{% if report.observables %}
+| Type | Value | Source |
+|---|---|---|
+{% for observable in report.observables %}
+| {{ observable.type }} | {{ observable.value }} | {{ observable.source }} |
+{% endfor %}
+{% else %}
+No observables were collected.
+{% endif %}
+
+## Notes
+
+This report is generated from a controlled OSINT pipeline and should be reviewed by an analyst before redistribution.
+

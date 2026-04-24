@@ -1,0 +1,132 @@
+source_hubs:
+  - id: awesome_osint
+    name: Awesome OSINT
+    kind: curated_repo
+    url: https://github.com/jivoi/awesome-osint
+    notes: Broad curated OSINT resource list used as a category map for tool selection.
+  - id: osint_framework
+    name: OSINT Framework
+    kind: framework
+    url: https://osintframework.com/
+    notes: Free-first OSINT framework with useful markers for local install, dorks, registration, and manual URL editing.
+  - id: startme_canada
+    name: OSINT Resources in Canada
+    kind: curated_page
+    url: https://start.me/p/aLe0vp/osint-resources-in-canada
+    notes: Canada-focused localization and regional OSINT hub.
+  - id: startme_osint4all
+    name: OSINT4ALL
+    kind: curated_page
+    url: https://start.me/p/L1rEYQ/osint4all
+    notes: Broad OSINT curation page used as a multi-topic external hub.
+
+categories:
+  identity:
+    description: Person, username, alias, email, phone pivots.
+    sources:
+      - awesome_osint
+      - osint_framework
+      - startme_osint4all
+    subcategories:
+      - username_check
+      - people_investigations
+      - email_search
+      - phone_research
+  company:
+    description: Business, registry, filings, and organizational pivots.
+    sources:
+      - awesome_osint
+      - osint_framework
+      - startme_canada
+    subcategories:
+      - company_research
+      - business_registry
+      - job_research
+  infrastructure:
+    description: Domains, IPs, repos, certificates, and exposure research.
+    sources:
+      - awesome_osint
+      - osint_framework
+    subcategories:
+      - domain_ip_research
+      - code_search
+      - dns
+      - web_history
+  media_geospatial:
+    description: Images, videos, maps, and location-first investigation.
+    sources:
+      - awesome_osint
+      - startme_canada
+      - startme_osint4all
+    subcategories:
+      - image_search
+      - image_analysis
+      - video_search
+      - geospatial_research
+  social:
+    description: Social platforms, forums, communities, and real-time social search.
+    sources:
+      - awesome_osint
+      - osint_framework
+      - startme_osint4all
+    subcategories:
+      - major_social_networks
+      - social_media_tools
+      - forums_discussions
+  threat_intel:
+    description: Threat actor, breach, and CTI-adjacent research.
+    sources:
+      - awesome_osint
+      - osint_framework
+    subcategories:
+      - threat_actor_search
+      - data_breach
+      - live_threat_maps
+
+preferred_collectors:
+  username:
+    direct_tools:
+      - socialscan
+      - maigret
+    supporting_hubs:
+      - awesome_osint
+      - osint_framework
+      - startme_osint4all
+  email:
+    direct_tools:
+      - socialscan
+      - h8mail
+      - ghunt
+    supporting_hubs:
+      - awesome_osint
+      - osint_framework
+  phone:
+    direct_tools:
+      - phoneinfoga
+    supporting_hubs:
+      - awesome_osint
+      - startme_osint4all
+  person_name:
+    direct_tools: []
+    supporting_hubs:
+      - awesome_osint
+      - startme_canada
+      - startme_osint4all
+  company:
+    direct_tools:
+      - theHarvester
+      - bbot
+      - spiderfoot
+    supporting_hubs:
+      - awesome_osint
+      - startme_canada
+  domain:
+    direct_tools:
+      - amass
+      - bbot
+      - theHarvester
+      - spiderfoot
+    supporting_hubs:
+      - awesome_osint
+      - osint_framework
+

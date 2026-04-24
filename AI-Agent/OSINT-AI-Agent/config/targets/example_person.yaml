@@ -1,0 +1,10 @@
+target:
+  value: Jane Doe
+  type: person_name
+  label: Example Person
+  passive_only: true
+  tags:
+    - demo
+    - osint
+    - identity
+

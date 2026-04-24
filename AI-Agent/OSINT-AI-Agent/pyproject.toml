@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osint-pipeline-agent"
+version = "0.1.0"
+description = "Controlled OSINT pipeline for Kali Linux with automated reporting."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+pdf = ["weasyprint>=62,<70"]
+
+[project.scripts]
+osint-agent = "osint_agent.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

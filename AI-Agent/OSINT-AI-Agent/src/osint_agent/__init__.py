@@ -1,0 +1,2 @@
+"""OSINT Pipeline Agent package."""
+
