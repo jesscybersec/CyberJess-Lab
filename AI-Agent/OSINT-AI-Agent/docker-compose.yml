@@ -1,0 +1,16 @@
+services:
+  osint-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: osint-agent
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./config:/app/config
+      - ./templates:/app/templates
+    working_dir: /app
+    command: ["python", "-m", "osint_agent.main", "--help"]
+

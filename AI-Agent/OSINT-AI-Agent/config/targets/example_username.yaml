@@ -1,0 +1,10 @@
+target:
+  value: cyberjess
+  type: username
+  label: Example Username
+  passive_only: true
+  tags:
+    - demo
+    - osint
+    - social
+

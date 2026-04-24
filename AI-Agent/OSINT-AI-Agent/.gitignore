@@ -1,0 +1,10 @@
+/.env
+/reports/*.md
+!/reports/.gitkeep
+/data/raw/**
+!/data/raw/.gitkeep
+__pycache__/
+*.py[codz]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

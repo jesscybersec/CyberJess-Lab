@@ -1,0 +1,10 @@
+target:
+  value: example.com
+  type: domain
+  label: Example Domain
+  passive_only: true
+  tags:
+    - demo
+    - osint
+    - technical
+
