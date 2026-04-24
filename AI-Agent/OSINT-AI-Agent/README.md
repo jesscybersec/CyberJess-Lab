@@ -203,8 +203,8 @@ SpiderFoot and PhoneInfoga remain supported as optional additions.
 
 Setup references:
 
-- [docs/en/KALI_SETUP.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\en\KALI_SETUP.md)
-- [docs/fr/KALI_SETUP.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\fr\KALI_SETUP.md)
+- [docs/en/KALI_SETUP.md](docs/en/KALI_SETUP.md)
+- [docs/fr/KALI_SETUP.md](docs/fr/KALI_SETUP.md)
 
 ---
 
@@ -228,14 +228,14 @@ AI-Agent/
 
 Key references:
 
-- [docs/en/PROJECT_OVERVIEW.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\en\PROJECT_OVERVIEW.md)
-- [docs/fr/PROJECT_OVERVIEW.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\fr\PROJECT_OVERVIEW.md)
-- [docs/en/ARCHITECTURE.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\en\ARCHITECTURE.md)
-- [docs/fr/ARCHITECTURE.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\fr\ARCHITECTURE.md)
-- [docs/en/MAX_COVERAGE_STRATEGY.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\en\MAX_COVERAGE_STRATEGY.md)
-- [docs/fr/MAX_COVERAGE_STRATEGY.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\fr\MAX_COVERAGE_STRATEGY.md)
-- [docs/en/CANADA_LOCALIZATION.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\en\CANADA_LOCALIZATION.md)
-- [docs/fr/CANADA_LOCALIZATION.md](F:\Code\Github\CyberJess-Lab\AI-Agent\OSINT-AI-Agent\docs\fr\CANADA_LOCALIZATION.md)
+- [docs/en/PROJECT_OVERVIEW.md](docs/en/PROJECT_OVERVIEW.md)
+- [docs/fr/PROJECT_OVERVIEW.md](docs/fr/PROJECT_OVERVIEW.md)
+- [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md)
+- [docs/fr/ARCHITECTURE.md](docs/fr/ARCHITECTURE.md)
+- [docs/en/MAX_COVERAGE_STRATEGY.md](docs/en/MAX_COVERAGE_STRATEGY.md)
+- [docs/fr/MAX_COVERAGE_STRATEGY.md](docs/fr/MAX_COVERAGE_STRATEGY.md)
+- [docs/en/CANADA_LOCALIZATION.md](docs/en/CANADA_LOCALIZATION.md)
+- [docs/fr/CANADA_LOCALIZATION.md](docs/fr/CANADA_LOCALIZATION.md)
 
 ---
 
