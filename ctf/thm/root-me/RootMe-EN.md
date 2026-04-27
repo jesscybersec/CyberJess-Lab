@@ -30,8 +30,6 @@ To make the commands easier to read, add the target IP to the attacker machine's
 echo "<TARGET_IP> rootme.thm" | sudo tee -a /etc/hosts
 ```
 
-![Machine deployment](screenshots/image.png)
-
 ## 2. Reconnaissance
 
 Scan the target to identify exposed services:

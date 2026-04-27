@@ -1,8 +1,8 @@
 # TryHackMe - RootMe
 
-Le walkthrough est maintenant disponible en deux versions depuis le README :
+The walkthrough is available in two languages from the README:
 
-- [Version française](RootMe-FR.md)
 - [English version](RootMe-EN.md)
+- [Version française](RootMe-FR.md)
 
-Page d'entrée : [README.md](README.md)
+Main entry point: [README.md](README.md)

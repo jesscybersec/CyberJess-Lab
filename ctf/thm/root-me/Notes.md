@@ -1,6 +1,6 @@
-# Notes brutes - RootMe
+# Raw Notes - RootMe
 
-Ces notes conservent la trace de résolution originale en anglais. Les walkthroughs propres sont disponibles depuis [README.md](README.md).
+These notes preserve the original English solving process. The cleaned walkthroughs are available from [README.md](README.md).
 
 # Enumeration
 
@@ -75,7 +75,7 @@ Target: http://rootme.thm/
 - We create a `php-reverse-shell.php` file.
 - We tried uploading it to [http://rootme.thm/panel/](http://rootme.thm/panel/). We had an error message.
 
-![Upload PHP bloqué](screenshots/image%203.png)
+![Blocked PHP upload](screenshots/image%203.png)
 
 - We change the extension file for `php-reverse-shell.php5` and uploaded it successfully.
 - We could access the uploaded file from [http://rootme.thm/uploads/](http://rootme.thm/uploads/).
@@ -87,11 +87,11 @@ nc -lvnp 4444
 
 - We clicked on the `php-reverse-shell.php5` file from [http://rootme.thm/uploads/](http://rootme.thm/uploads/) and got a shell!
 
-![Reverse shell obtenu](screenshots/image%204.png)
+![Reverse shell received](screenshots/image%204.png)
 
 - We went to the root folder with `cd  ~` and found the `user.txt`file. We just needed to `cat user.txt`to see the flag!
 
-![Lecture du flag utilisateur](screenshots/image%205.png)
+![Reading the user flag](screenshots/image%205.png)
 
 # Privilege Escalation
 
@@ -176,7 +176,7 @@ sudo install -m =xs $(which python) .
 
 - We are root!
 
-![Shell root](screenshots/image%206.png)
+![Root shell](screenshots/image%206.png)
 
 - We search for the `root.txt` file :
 
@@ -186,4 +186,4 @@ find / -type f -name root.txt
 
 - Once it was found we checked the content of the file to get the flag!
 
-![Lecture du flag root](screenshots/image%207.png)
+![Reading the root flag](screenshots/image%207.png)
