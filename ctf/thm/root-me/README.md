@@ -1,11 +1,17 @@
-# TryHackMe - RootMe
+# 🧬 TryHackMe - RootMe
 
-Beginner-friendly walkthrough for the **RootMe** CTF room on TryHackMe.
+🔗 **TryHackMe Room:** [RootMe](https://tryhackme.com/room/rrootme)
 
-## Languages
+```diff
+> enumerate the web • bypass the upload filter • turn SUID python into root
+```
 
-- GB English: [RootMe-EN.md](RootMe-EN.md)
-- FR Français: [RootMe-FR.md](RootMe-FR.md)
+---
+
+## 🌐 Languages
+
+- 🇬🇧 **English:** [RootMe-EN.md](RootMe-EN.md)
+- 🇫🇷 **Français:** [RootMe-FR.md](RootMe-FR.md)
 
 ---
 
@@ -13,30 +19,36 @@ Beginner-friendly walkthrough for the **RootMe** CTF room on TryHackMe.
 
 ---
 
-## Overview
+## 🧠 Overview
 
-**RootMe** is a beginner CTF focused on classic web enumeration, file upload bypass, reverse shell execution, and Linux privilege escalation.
+**RootMe** is a beginner-friendly CTF focused on classic web enumeration, file upload bypass, reverse shell execution, and Linux privilege escalation.
 
 The attack path starts with HTTP enumeration, leads to an upload form under `/panel/`, then uses a `.php5` extension bypass to execute a PHP reverse shell from `/uploads/`. Privilege escalation is completed through a SUID-enabled `python2.7` binary.
 
-## Objectives
+---
 
-- Enumerate exposed services and web directories
-- Identify the upload panel
-- Bypass the PHP upload filter
-- Catch a reverse shell as `www-data`
-- Retrieve `user.txt`
-- Abuse SUID `python2.7` for privilege escalation
-- Retrieve `root.txt`
+## 🎯 Objectives
 
-## Repository Contents
+- 🔎 Enumerate exposed services and web directories
+- 📤 Identify the upload panel
+- 🧪 Bypass the PHP upload filter
+- 🐚 Catch a reverse shell as `www-data`
+- 🚩 Retrieve `user.txt`
+- ⬆️ Abuse SUID `python2.7` for privilege escalation
+- 👑 Retrieve `root.txt`
 
-- [English walkthrough](RootMe-EN.md)
-- [French walkthrough](RootMe-FR.md)
-- [Original notes](Notes.md)
-- [Screenshots](screenshots/)
+---
 
-## Attack Path
+## 📁 Repository Contents
+
+- 📘 [English walkthrough](RootMe-EN.md)
+- 📙 [French walkthrough](RootMe-FR.md)
+- 📝 [Original notes](Notes.md)
+- 🖼️ [Screenshots](screenshots/)
+
+---
+
+## 🧭 Attack Path
 
 1. Scan the target and identify SSH plus Apache HTTP.
 2. Enumerate web directories and find `/panel/` and `/uploads/`.
@@ -46,7 +58,12 @@ The attack path starts with HTTP enumeration, leads to an upload form under `/pa
 6. Find SUID binaries and exploit `/usr/bin/python2.7`.
 7. Read the root flag.
 
-## References
+👉 **Insight:**
+This room rewards careful enumeration. The exploit chain is simple, but each step depends on noticing where the application stores and executes uploaded files.
+
+---
+
+## 🔗 References
 
 - [TryHackMe - RootMe](https://tryhackme.com/room/rrootme)
 - [GTFOBins - Python](https://gtfobins.github.io/gtfobins/python/)

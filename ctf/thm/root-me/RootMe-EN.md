@@ -1,36 +1,25 @@
-# TryHackMe - RootMe
+# 🧬 RootMe — Walkthrough
 
-> Walkthrough for the **RootMe** CTF on TryHackMe.
+🔗 **TryHackMe Room:** [RootMe](https://tryhackme.com/room/rrootme)
 
-## Information
-
-- Platform: TryHackMe
-- Difficulty: beginner
-- Goal: get a user shell, retrieve `user.txt`, escalate to `root`, then retrieve `root.txt`
-- Exposed services: SSH and HTTP
-
-## Table of Contents
-
-1. [Deployment](#1-deployment)
-2. [Reconnaissance](#2-reconnaissance)
-3. [Web Enumeration](#3-web-enumeration)
-4. [Exploitation](#4-exploitation)
-5. [User Flag](#5-user-flag)
-6. [Privilege Escalation](#6-privilege-escalation)
-7. [Root Flag](#7-root-flag)
-8. [Key Takeaways](#key-takeaways)
-
-## 1. Deployment
-
-Start by connecting to the TryHackMe network with OpenVPN, then deploy the room machine.
-
-To make the commands easier to read, add the target IP to the attacker machine's `hosts` file:
-
-```bash
-echo "<TARGET_IP> rootme.thm" | sudo tee -a /etc/hosts
+```diff
+> enumerate first • upload with intent • let SUID python open the root door
 ```
 
-## 2. Reconnaissance
+---
+
+## ℹ️ Information
+
+- **Platform:** TryHackMe
+- **Difficulty:** Beginner
+- **Goal:** get a user shell, retrieve `user.txt`, escalate to `root`, then retrieve `root.txt`
+- **Exposed services:** SSH and HTTP
+
+---
+
+## 🧠 Reconnaissance
+
+### Port Scan
 
 Scan the target to identify exposed services:
 
@@ -49,7 +38,14 @@ Port `80` is running an Apache web application.
 
 ![Reconnaissance task](screenshots/image%201.png)
 
-## 3. Web Enumeration
+👉 **Insight:**
+The exposed surface is small, so the web service immediately becomes the main path forward.
+
+---
+
+## 🌐 Web Enumeration
+
+### Directory Discovery
 
 Next, enumerate web directories:
 
@@ -71,7 +67,14 @@ Interpretation:
 
 This gives us a clear attack path: upload a malicious file, then execute it from `/uploads/`.
 
-## 4. Exploitation
+👉 **Insight:**
+When an upload page and a public upload directory appear together, always test whether uploaded files can be executed server-side.
+
+---
+
+## 🧪 Exploitation
+
+### Reverse Shell Payload
 
 Create a PHP reverse shell. The IP address must be the attacker machine's TryHackMe VPN IP:
 
@@ -88,6 +91,8 @@ nano php-reverse-shell.php
 Uploading a `.php` file is blocked by the application.
 
 ![Blocked PHP upload](screenshots/image%203.png)
+
+### Extension Bypass
 
 Bypass the filter by changing the extension to `.php5`:
 
@@ -113,7 +118,12 @@ The listener receives a shell on the target.
 
 ![Reverse shell received](screenshots/image%204.png)
 
-## 5. User Flag
+👉 **Insight:**
+Upload filters often block obvious extensions, not every executable server-side variant. Testing alternate PHP extensions can reveal the intended bypass.
+
+---
+
+## 🚩 User Flag
 
 Once the shell is available, move to the web user's home directory and read the flag:
 
@@ -125,9 +135,15 @@ cat user.txt
 
 ![Reading the user flag](screenshots/image%205.png)
 
+The answer was submitted successfully in TryHackMe.
+
 ![User flag validation](screenshots/image%202.png)
 
-## 6. Privilege Escalation
+---
+
+## ⬆️ Privilege Escalation
+
+### SUID Enumeration
 
 Search for binaries with the SUID bit set:
 
@@ -141,6 +157,8 @@ One interesting binary appears in the results:
 /usr/bin/python2.7
 ```
 
+### Root Shell
+
 Because `python2.7` runs with the privileges of its owner, `root`, we can use the SUID technique documented on GTFOBins:
 
 ```bash
@@ -151,7 +169,12 @@ The `-p` option preserves the effective privileges. This gives us a root shell.
 
 ![Root shell](screenshots/image%206.png)
 
-## 7. Root Flag
+👉 **Insight:**
+SUID binaries are one of the fastest privilege escalation checks on Linux CTF boxes. GTFOBins is the map; unusual SUID binaries are the trail.
+
+---
+
+## 👑 Root Flag
 
 Find the `root.txt` file:
 
@@ -167,15 +190,25 @@ cat /root/root.txt
 
 ![Reading the root flag](screenshots/image%207.png)
 
-## Key Takeaways
+---
 
-- Web enumeration reveals an upload form and a public `/uploads/` directory.
-- The upload filter blocks `.php`, but accepts `.php5`.
-- A PHP file uploaded to `/uploads/` can be executed from the browser.
-- `/usr/bin/python2.7` has the SUID bit set.
-- GTFOBins provides a direct method to get a root shell through SUID Python.
+## 🧠 Final Thoughts
 
-## References
+This room highlights:
+
+- web directory enumeration
+- file upload filter bypass
+- PHP reverse shells
+- SUID binary discovery
+- GTFOBins-based Linux privilege escalation
+
+---
+
+```diff
+> public uploads become code execution • SUID python becomes root
+```
+
+## 🔗 References
 
 - [TryHackMe - RootMe](https://tryhackme.com/room/rrootme)
 - [GTFOBins - Python](https://gtfobins.github.io/gtfobins/python/)
