@@ -1,4 +1,8 @@
-# 🤖 TryHackMe - Skynet
+<p align="center">
+  <img src="screenshots/terminator-logo.png" alt="Skynet Terminator logo" width="260">
+</p>
+
+# TryHackMe - Skynet
 
 🔗 **TryHackMe Room:** [Skynet](https://tryhackme.com/room/skynet)
 

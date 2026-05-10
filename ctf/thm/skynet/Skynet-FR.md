@@ -1,4 +1,8 @@
-# 🤖 Skynet - Walkthrough
+<p align="center">
+  <img src="screenshots/terminator-logo.png" alt="Logo Terminator Skynet" width="260">
+</p>
+
+# Skynet - Walkthrough
 
 🔗 **Room TryHackMe :** [Skynet](https://tryhackme.com/room/skynet)
 
