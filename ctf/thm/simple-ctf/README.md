@@ -45,7 +45,6 @@ The attack path starts with port scanning and web enumeration. The `/simple` dir
 - 📘 [English walkthrough](SimpleCTF-EN.md)
 - 📙 [French walkthrough](SimpleCTF-FR.md)
 - 📝 [Original notes](Notes.md)
-- 🧾 [Original exported writeup](SimpleCTF-Original.md)
 - 🖼️ [Screenshots](screenshots/)
 
 ---
