@@ -238,4 +238,4 @@ This room highlights:
 
 ---
 
-The original solving notes are preserved in [Notes.md](Notes.md).
+The detailed terminal notes are preserved in [Notes.md](Notes.md), and the original exported writeup with the Python exploit block is preserved in [SimpleCTF-Original.md](SimpleCTF-Original.md).

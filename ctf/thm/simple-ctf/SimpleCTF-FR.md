@@ -238,4 +238,4 @@ Cette room met en pratique :
 
 ---
 
-Les notes brutes de résolution sont conservées dans [Notes.md](Notes.md).
+Les notes terminal détaillées sont conservées dans [Notes.md](Notes.md), et l'export original avec le bloc d'exploit Python est conservé dans [SimpleCTF-Original.md](SimpleCTF-Original.md).
