@@ -428,7 +428,7 @@ http://skynet.thm/45kra24zxs28v3yd/administrator/alerts/alertConfigField.php?url
 
 ![image.png](screenshots/11-shell.png)
 
-- We found our `user.txt` flag!
+- We found our `user.txt` flag! The screenshot below is intentionally blurred where the flag value appears for the public writeup.
 
 ![image.png](screenshots/12-userflag.png)
 

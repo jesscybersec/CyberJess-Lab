@@ -347,7 +347,7 @@ cat user.txt
 
 ![Flag utilisateur](screenshots/12-userflag.png)
 
-La valeur du flag n'est pas affichée ici. Le but est de publier la méthode, pas de transformer le README en distributeur automatique de réponses.
+La capture est volontairement floutée à l'endroit où le flag apparaît. Le but est de publier la méthode, pas de transformer le README en distributeur automatique de réponses.
 
 ---
 

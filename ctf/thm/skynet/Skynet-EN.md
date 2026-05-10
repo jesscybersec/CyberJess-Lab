@@ -347,7 +347,7 @@ cat user.txt
 
 ![User flag](screenshots/12-userflag.png)
 
-The flag value is intentionally not printed here. We are publishing a walkthrough, not putting the answer key in a trench coat.
+The screenshot is intentionally blurred where the flag appears. We are publishing a walkthrough, not putting the answer key in a trench coat.
 
 ---
 
