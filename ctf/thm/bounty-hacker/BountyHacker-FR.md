@@ -3,7 +3,7 @@
 🔗 **Room TryHackMe :** [Bounty Hacker](https://tryhackme.com/room/cowboyhacker)
 
 <p align="center">
-  <img src="./bounty-hacker-logo.png" alt="Logo Bounty Hacker" width="520">
+  <img src="./bounty-hacker-logo.png" alt="Logo Bounty Hacker" width="240">
 </p>
 
 ```diff
