@@ -1,6 +1,8 @@
 # TryHackMe - Bounty Hacker
 
-![Bounty Hacker logo](./bounty-hacker-logo.png)
+<p align="center">
+  <img src="./bounty-hacker-logo.png" alt="Bounty Hacker logo" width="520">
+</p>
 
 🔗 **TryHackMe Room:** [Bounty Hacker](https://tryhackme.com/room/cowboyhacker)
 

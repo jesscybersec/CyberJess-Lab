@@ -2,7 +2,9 @@
 
 🔗 **Room TryHackMe :** [Bounty Hacker](https://tryhackme.com/room/cowboyhacker)
 
-![Logo Bounty Hacker](./bounty-hacker-logo.png)
+<p align="center">
+  <img src="./bounty-hacker-logo.png" alt="Logo Bounty Hacker" width="520">
+</p>
 
 ```diff
 > FTP anonyme donne les indices • Hydra trouve la clé • sudo tar ouvre la salle du trône
