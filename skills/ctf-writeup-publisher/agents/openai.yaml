@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTF Writeup Publisher"
+  short_description: "Publish CyberJess-style bilingual CTF walkthroughs."
+  default_prompt: "Publish this local CTF room as a bilingual CyberJess-style GitHub walkthrough with redacted flags, README, logo handling, verification, and Git commit/push only when requested."
