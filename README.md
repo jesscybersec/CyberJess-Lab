@@ -107,7 +107,7 @@ My cybersecurity environment is built around a constantly evolving ecosystem of 
 Specialized modules:
 
 - 🧰 Local Tools → [Tools](./Tools/)
-- 📚 PDF Merger → [Tools/PDFMerger](./Tools/PDFMerger/)
+- 📚 PDF Merger → [jesscybersec/PDFMerger](https://github.com/jesscybersec/PDFMerger)
 - 🧠 OSINT AI Agent → [OSINT-AI-Agent](https://github.com/jesscybersec/OSINT-AI-Agent)
 - 🛡️ KQL Detections → (coming soon)
 - 🧪 Malware Analysis → (coming soon)
