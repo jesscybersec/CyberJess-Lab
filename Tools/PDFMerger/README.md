@@ -26,8 +26,11 @@ réordonner et de fusionner localement des collections de PDF.
 ### Kali Linux / Debian
 
 ```bash
-git clone https://github.com/jesscybersec/CyberJess-Lab.git
-cd CyberJess-Lab/Tools/PDFMerger
+git clone --depth 1 --filter=blob:none --sparse \
+  https://github.com/jesscybersec/CyberJess-Lab.git PDFMerger-Source
+cd PDFMerger-Source
+git sparse-checkout set Tools/PDFMerger
+cd Tools/PDFMerger
 chmod +x install_kali.sh
 ./install_kali.sh
 ```

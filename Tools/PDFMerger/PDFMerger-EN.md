@@ -141,11 +141,17 @@ streamlit run PDFMerger.py \
 ### Automated installation
 
 ```bash
-git clone https://github.com/jesscybersec/CyberJess-Lab.git
-cd CyberJess-Lab/Tools/PDFMerger
+git clone --depth 1 --filter=blob:none --sparse \
+  https://github.com/jesscybersec/CyberJess-Lab.git PDFMerger-Source
+cd PDFMerger-Source
+git sparse-checkout set Tools/PDFMerger
+cd Tools/PDFMerger
 chmod +x install_kali.sh
 ./install_kali.sh
 ```
+
+This sparse clone downloads only the `Tools/PDFMerger` working tree instead
+of checking out the complete CyberJess-Lab repository.
 
 ### Manual installation
 
