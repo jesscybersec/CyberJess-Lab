@@ -1,9 +1,0 @@
-[[sources]]
-name = "Example Website"
-base_url = "https://example.com/"
-enabled = true
-seed_urls = ["https://example.com/"]
-allowed_paths = ["/"]
-blocked_patterns = ["/login", "/admin", "/account"]
-keywords = ["example"]
-notes = "Safe demonstration source."

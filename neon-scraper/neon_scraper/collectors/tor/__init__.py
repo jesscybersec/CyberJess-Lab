@@ -1,2 +1,0 @@
-"""Experimental passive Tor collector."""
-
