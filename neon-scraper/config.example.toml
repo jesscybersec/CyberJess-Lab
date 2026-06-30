@@ -1,0 +1,34 @@
+[app]
+data_dir = "data"
+database_path = "data/osint.sqlite"
+reports_dir = "data/reports"
+log_level = "INFO"
+
+[collection]
+user_agent = "Neon-Scraper/0.1 passive exposure monitor"
+timeout_seconds = 10
+rate_limit_seconds = 2
+
+[web]
+enabled = true
+sources_file = "config/web_sources.toml"
+respect_robots_txt = true
+max_response_bytes = 1048576
+snippet_radius = 80
+interface_host = "127.0.0.1"
+interface_port = 8765
+max_depth = 1
+max_pages_per_source = 10
+
+[tor]
+enabled = false
+proxy_host = "127.0.0.1"
+proxy_port = 9050
+proxy_scheme = "socks5h"
+rate_limit_seconds = 30
+timeout_seconds = 10
+user_agent = "Neon-Scraper/0.1 passive tor monitor"
+allowlist_file = "config/tor_allowlist.toml"
+blocklist_file = "config/tor_blocklist.toml"
+log_requests = true
+max_response_bytes = 524288
