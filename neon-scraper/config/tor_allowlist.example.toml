@@ -1,0 +1,9 @@
+[[sources]]
+name = "Example Public Onion Source"
+base_url = "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.onion/"
+enabled = false
+seed_urls = ["http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.onion/"]
+allowed_paths = ["/"]
+blocked_patterns = ["/login", "/account", "/cart", "/checkout"]
+keywords = ["example"]
+notes = "Disabled placeholder. Replace with a lawful public onion source you are authorized to monitor."

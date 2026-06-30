@@ -1,0 +1,11 @@
+blocked_categories = [
+    "stolen_data_dumps",
+    "credential_markets",
+    "exploit_markets",
+    "marketplaces",
+    "illegal_content",
+    "doxxing",
+    "private_forums",
+    "account_required_forums",
+    "captcha_protected_sites",
+]

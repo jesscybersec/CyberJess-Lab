@@ -1,0 +1,12 @@
+# Local runtime state
+config.toml
+data/
+config/*.toml
+!config/*.example.toml
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
