@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0d1117"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#39ff14" stroke-width="14"/>
+  <circle cx="256" cy="256" r="8" fill="#39ff14"/>
+  <polygon points="256,90 300,270 256,240 212,270" fill="#39ff14"/>
+  <polygon points="256,422 300,242 256,272 212,242" fill="#1f8a0c"/>
+  <text x="256" y="470" font-family="monospace" font-size="40" fill="#39ff14" text-anchor="middle">N</text>
+</svg>
