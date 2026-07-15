@@ -24,6 +24,7 @@ const SCENARIOS = [
         name: "L'ombre du grand arbre",
         desc: "Un lutin a laissé une empreinte de pas ici.",
         hint: "Cherche l'endroit le plus frais du jardin, là où le soleil ne passe pas.",
+        ar: "fairy",
       },
       {
         bearing: 110,
@@ -31,6 +32,7 @@ const SCENARIOS = [
         name: "Le caillou qui rit",
         desc: "On dit que ce caillou sourit quand on le regarde de près.",
         hint: "Regarde près du sol, un objet un peu rond et un peu bizarre t'attend.",
+        ar: "orb",
       },
       {
         bearing: 200,
@@ -38,6 +40,7 @@ const SCENARIOS = [
         name: "La cachette des fleurs",
         desc: "Les fleurs les plus colorées gardent un secret.",
         hint: "Approche-toi doucement pour ne pas réveiller les petites bêtes.",
+        ar: "crystal",
       },
       {
         bearing: 320,
@@ -45,6 +48,7 @@ const SCENARIOS = [
         name: "Le trésor des lutins !",
         desc: "Bravo, tu as trouvé la cachette finale ! Une petite surprise t'attend ici.",
         hint: "C'est le dernier arrêt : regarde bien tout autour de toi.",
+        ar: "key",
       },
     ],
   },
@@ -67,6 +71,7 @@ const SCENARIOS = [
         name: "La crique du débarquement",
         desc: "L'équipage a débarqué ici en premier.",
         hint: "Cherche un endroit dégagé, comme une plage pour un bateau.",
+        ar: "coin",
       },
       {
         bearing: 130,
@@ -74,6 +79,7 @@ const SCENARIOS = [
         name: "Le rocher du perroquet",
         desc: "Un vieux perroquet aurait surveillé cet endroit.",
         hint: "Un banc, un arbre ou un rocher fait un bon perchoir.",
+        ar: "skull",
       },
       {
         bearing: 210,
@@ -81,6 +87,7 @@ const SCENARIOS = [
         name: "Le marécage des crabes",
         desc: "Attention où vous mettez les pieds, moussaillons !",
         hint: "Reste sur le chemin si le sol est humide par ici.",
+        ar: "dice",
       },
       {
         bearing: 280,
@@ -88,6 +95,7 @@ const SCENARIOS = [
         name: "La croisée des vents",
         desc: "Quatre chemins se croisent, mais un seul mène au trésor.",
         hint: "Regarde bien le radar : la flèche ne ment jamais.",
+        ar: "orb",
       },
       {
         bearing: 15,
@@ -95,6 +103,7 @@ const SCENARIOS = [
         name: "Le coffre du capitaine !",
         desc: "Le butin de Barbe-Rouge est enfin à vous !",
         hint: "C'est ici que l'aventure se termine, matelot !",
+        ar: "key",
       },
     ],
   },
@@ -117,6 +126,7 @@ const SCENARIOS = [
         name: "Le sentier du silence",
         desc: "Avance sans faire de bruit, comme un vrai explorateur.",
         hint: "Énigme : 3 arbres plus loin qu'un banc, cherche une pierre marquée.",
+        ar: "ghost",
       },
       {
         bearing: 80,
@@ -124,6 +134,7 @@ const SCENARIOS = [
         name: "Le pont des échos",
         desc: "Ici, les sons voyagent loin. Écoute bien.",
         hint: "Énigme : additionne 2 + 3, avance de ce nombre de grands pas dans le cap indiqué.",
+        ar: "crystal",
       },
       {
         bearing: 160,
@@ -131,6 +142,7 @@ const SCENARIOS = [
         name: "La clairière cachée",
         desc: "Un rayon de soleil perce toujours ici, même en plein bois.",
         hint: "Énigme : le prochain indice est caché là où l'ombre est la plus courte à midi.",
+        ar: "fairy",
       },
       {
         bearing: 250,
@@ -138,6 +150,7 @@ const SCENARIOS = [
         name: "Le rocher gravé",
         desc: "Une ancienne inscription est à moitié effacée sur une pierre.",
         hint: "Énigme : cherche un symbole en forme de spirale, il indique la direction du trésor.",
+        ar: "skull",
       },
       {
         bearing: 30,
@@ -145,6 +158,7 @@ const SCENARIOS = [
         name: "Le trésor du gardien !",
         desc: "L'objet magique de la légende est enfin retrouvé.",
         hint: "Dernier arrêt : regarde en hauteur, pas seulement au sol.",
+        ar: "key",
       },
     ],
   },
@@ -167,6 +181,7 @@ const SCENARIOS = [
         name: "La place de l'ancien marché",
         desc: "Autrefois, les commerçants s'y retrouvaient chaque semaine.",
         hint: "Cherche un point de repère central, comme une fontaine ou une place ouverte.",
+        ar: "coin",
       },
       {
         bearing: 140,
@@ -174,6 +189,7 @@ const SCENARIOS = [
         name: "La façade oubliée",
         desc: "Un détail architectural que peu de passants remarquent.",
         hint: "Lève les yeux : les indices sont souvent au-dessus du rez-de-chaussée.",
+        ar: "crystal",
       },
       {
         bearing: 220,
@@ -181,6 +197,7 @@ const SCENARIOS = [
         name: "Le passage discret",
         desc: "Un raccourci que seuls les habitués connaissent.",
         hint: "Cherche une petite ruelle ou un passage entre deux bâtiments.",
+        ar: "orb",
       },
       {
         bearing: 320,
@@ -188,6 +205,7 @@ const SCENARIOS = [
         name: "Le point de vue final",
         desc: "Le meilleur endroit pour terminer la balade en beauté.",
         hint: "C'est la dernière étape : profite du moment avant de conclure la balade.",
+        ar: "key",
       },
     ],
   },
@@ -210,6 +228,7 @@ const SCENARIOS = [
         name: "Point de contact Alpha",
         desc: "Premier lieu de rendez-vous de l'agent.",
         hint: "Indice : compte les lettres du mot 'ESPION' (6) — avance de 6 fois 10 pas.",
+        ar: "orb",
       },
       {
         bearing: 95,
@@ -217,6 +236,7 @@ const SCENARIOS = [
         name: "La boîte aux lettres morte",
         desc: "Un message aurait été déposé ici, caché à la vue de tous.",
         hint: "Indice : cherche un objet fixe et discret, à hauteur de main.",
+        ar: "key",
       },
       {
         bearing: 175,
@@ -224,6 +244,7 @@ const SCENARIOS = [
         name: "Le rendez-vous manqué",
         desc: "L'agent ne s'est jamais présenté à ce point.",
         hint: "Indice codé (décalage de 1 lettre) : 'sbuf' → décale chaque lettre d'un cran en arrière.",
+        ar: "ghost",
       },
       {
         bearing: 260,
@@ -231,6 +252,7 @@ const SCENARIOS = [
         name: "La filature",
         desc: "Quelqu'un a suivi l'agent jusqu'ici.",
         hint: "Indice : le prochain cap est le double du premier (15° x 2), mais utilise celui du radar.",
+        ar: "ufo",
       },
       {
         bearing: 340,
@@ -238,6 +260,7 @@ const SCENARIOS = [
         name: "Le dossier final",
         desc: "La preuve ultime de la mission de l'agent, enfin récupérée.",
         hint: "Dernier arrêt : la mission est terminée, refermez le dossier.",
+        ar: "coin",
       },
     ],
   },
@@ -262,6 +285,7 @@ const SCENARIOS = [
         name: "Balise Zéro",
         desc: "Dernier signal capté avant la coupure générale.",
         hint: "Message chiffré (César, décalage 3) : 'vljqdo chur' — décale chaque lettre de 3 crans vers l'arrière.",
+        ar: "ufo",
       },
       {
         bearing: 75,
@@ -269,6 +293,7 @@ const SCENARIOS = [
         name: "Relais abandonné",
         desc: "Une ancienne antenne, désormais silencieuse, marque ce point.",
         hint: "Message chiffré (César, décalage 5) : 'wjqfnx rtwy' à décaler de 5 crans vers l'arrière.",
+        ar: "alien",
       },
       {
         bearing: 150,
@@ -276,6 +301,7 @@ const SCENARIOS = [
         name: "Le nœud aveugle",
         desc: "Un carrefour où plusieurs pistes se croisent sans indication.",
         hint: "Indice binaire : 01000011 01100001 01110000 = 3 lettres ASCII à convertir (indice : 'Cap').",
+        ar: "ghost",
       },
       {
         bearing: 230,
@@ -283,6 +309,7 @@ const SCENARIOS = [
         name: "Le bunker silencieux",
         desc: "Une structure discrète, hors de portée de tout capteur réseau.",
         hint: "Additionne les deux premiers caps de ce parcours (10 + 75 = 85), divise par 2 : le résultat est un indice, pas le cap réel.",
+        ar: "skull",
       },
       {
         bearing: 300,
@@ -290,6 +317,7 @@ const SCENARIOS = [
         name: "Le dernier saut",
         desc: "Le point de rupture avant l'extraction finale.",
         hint: "Message chiffré (César, décalage 1) : 'tbvu gjobm' à décaler de 1 cran vers l'arrière.",
+        ar: "alien",
       },
       {
         bearing: 20,
@@ -297,6 +325,7 @@ const SCENARIOS = [
         name: "Extraction — Signal rétabli",
         desc: "Mission accomplie. Le protocole fantôme est levé.",
         hint: "Dernier arrêt : c'est ici que le réseau, symboliquement, reprend vie.",
+        ar: "orb",
       },
     ],
   },

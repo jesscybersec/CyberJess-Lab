@@ -1,10 +1,17 @@
 (() => {
+  const SCAN_RADIUS_METERS = 30;
+
   const state = {
     caches: CacheStore.loadAll(),
+    trails: CustomTrailStore.loadAll(),
     position: null, // {lat, lon, accuracy}
     heading: null, // degrees, 0 = north
+    tiltBeta: null, // device front-back tilt, used for AR parallax
+    tiltGamma: null, // device left-right tilt, used for AR parallax
     targetId: null,
     orientationEnabled: false,
+    recording: null, // in-progress custom trail: {id, title, ..., waypoints: []}
+    scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null },
   };
 
   // ---------- Tabs ----------
@@ -56,6 +63,9 @@
   const enableOrientationBtn = document.getElementById("enableOrientationBtn");
 
   function handleOrientation(evt) {
+    if (evt.beta !== null) state.tiltBeta = evt.beta;
+    if (evt.gamma !== null) state.tiltGamma = evt.gamma;
+
     let heading = evt.webkitCompassHeading; // iOS Safari, already 0=north clockwise
     if (heading === undefined || heading === null) {
       if (evt.alpha === null) return;
@@ -197,8 +207,129 @@
       <div class="muted">cap: ${Math.round(bearingToTarget)}°${
       state.heading === null ? " (boussole non calibrée — cap par rapport au nord)" : ""
     }</div>
+      ${renderScanGate(target, distance)}
     `;
   }
+
+  function renderScanGate(target, distance) {
+    if (target.found) return '<div class="scan-gate muted">✅ Cache déjà trouvée</div>';
+    if (!target.ar) return "";
+    const obj = getArObject(target.ar);
+    if (!obj) return "";
+    if (distance <= SCAN_RADIUS_METERS) {
+      return `<div class="scan-gate"><button class="btn-primary" data-action="scan">📷 Scanner la zone</button></div>`;
+    }
+    return `<div class="scan-gate muted">🔒 Approche-toi à moins de ${SCAN_RADIUS_METERS} m pour scanner (encore ${Geo.formatDistance(distance - SCAN_RADIUS_METERS)})</div>`;
+  }
+
+  radarInfoEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest('button[data-action="scan"]');
+    if (!btn) return;
+    const target = getTarget();
+    if (target) openScanner(target);
+  });
+
+  // ---------- AR scanner (camera + floating virtual object) ----------
+  const arScannerEl = document.getElementById("arScanner");
+  const arVideoEl = document.getElementById("arVideo");
+  const arCanvasEl = document.getElementById("arCanvas");
+  const arCtx = arCanvasEl.getContext("2d");
+  const arObjectLabelEl = document.getElementById("arObjectLabel");
+  const arErrorEl = document.getElementById("arError");
+
+  async function openScanner(cache) {
+    const obj = getArObject(cache.ar);
+    if (!obj) return;
+
+    state.scanner.cacheId = cache.id;
+    state.scanner.baselineBeta = state.tiltBeta;
+    arObjectLabelEl.textContent = `Cherche : ${obj.emoji} ${obj.label}`;
+    arErrorEl.classList.add("hidden");
+    arScannerEl.classList.remove("hidden");
+    resizeArCanvas();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      state.scanner.stream = stream;
+      arVideoEl.srcObject = stream;
+    } catch (e) {
+      arErrorEl.textContent =
+        "Caméra indisponible (" + e.message + "). Tu peux quand même marquer la cache comme trouvée.";
+      arErrorEl.classList.remove("hidden");
+    }
+
+    runArLoop(obj);
+  }
+
+  function resizeArCanvas() {
+    arCanvasEl.width = window.innerWidth;
+    arCanvasEl.height = window.innerHeight;
+  }
+
+  function runArLoop(obj) {
+    const cx = arCanvasEl.width / 2;
+    const cy = arCanvasEl.height / 2;
+    const maxOffset = 70;
+
+    function frame(timestamp) {
+      if (!state.scanner.cacheId) return; // scanner closed
+      arCtx.clearRect(0, 0, arCanvasEl.width, arCanvasEl.height);
+
+      const gamma = state.tiltGamma || 0;
+      const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
+        ? state.tiltBeta - state.scanner.baselineBeta
+        : 0;
+      const offsetX = Math.max(-maxOffset, Math.min(maxOffset, -gamma * 2.2));
+      const offsetY = Math.max(-maxOffset, Math.min(maxOffset, -betaDelta * 2.2));
+      const bob = Math.sin(timestamp / 500) * 10;
+
+      const x = cx + offsetX;
+      const y = cy + offsetY + bob;
+
+      arCtx.save();
+      arCtx.shadowColor = obj.color;
+      arCtx.shadowBlur = 35;
+      arCtx.font = "72px 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+      arCtx.textAlign = "center";
+      arCtx.textBaseline = "middle";
+      arCtx.fillText(obj.emoji, x, y);
+      arCtx.restore();
+
+      state.scanner.rafId = requestAnimationFrame(frame);
+    }
+
+    state.scanner.rafId = requestAnimationFrame(frame);
+  }
+
+  function closeScanner() {
+    if (state.scanner.rafId) cancelAnimationFrame(state.scanner.rafId);
+    if (state.scanner.stream) state.scanner.stream.getTracks().forEach((t) => t.stop());
+    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null };
+    arVideoEl.srcObject = null;
+    arScannerEl.classList.add("hidden");
+  }
+
+  window.addEventListener("resize", () => {
+    if (!arScannerEl.classList.contains("hidden")) resizeArCanvas();
+  });
+
+  document.getElementById("arCloseBtn").addEventListener("click", closeScanner);
+
+  document.getElementById("arFoundBtn").addEventListener("click", () => {
+    const cacheId = state.scanner.cacheId;
+    const cache = state.caches.find((c) => c.id === cacheId);
+    closeScanner();
+    if (!cache) return;
+    cache.found = true;
+    state.caches = CacheStore.upsert(cache);
+    renderCacheList();
+    renderRadar();
+    renderScenarioList();
+    renderTrailList();
+  });
 
   // ---------- Scenarios ----------
   const scenarioListEl = document.getElementById("scenarioList");
@@ -313,6 +444,7 @@
         name: wp.name,
         desc: wp.desc,
         hint: wp.hint,
+        ar: wp.ar || null,
         difficulty: scenario.difficultyStars,
         terrain: scenario.difficultyStars,
         lat: dest.lat,
@@ -367,6 +499,240 @@
     }
   });
 
+  // ---------- Game master mode ----------
+  const gmNewTrailForm = document.getElementById("gmNewTrailForm");
+  const gmRecordingView = document.getElementById("gmRecordingView");
+  const gmRecordingTitleEl = document.getElementById("gmRecordingTitle");
+  const gmCheckpointListEl = document.getElementById("gmCheckpointList");
+  const gmCheckpointForm = document.getElementById("gmCheckpointForm");
+  const trailListEl = document.getElementById("trailList");
+
+  const DIFFICULTY_STARS = { Facile: 1, Moyen: 3, Difficile: 5 };
+
+  function renderGmView() {
+    if (state.recording) {
+      gmNewTrailForm.classList.add("hidden");
+      gmRecordingView.classList.remove("hidden");
+      gmRecordingTitleEl.textContent = `Enregistrement : ${state.recording.title}`;
+      gmCheckpointListEl.innerHTML =
+        state.recording.waypoints
+          .map(
+            (wp, idx) => `
+        <div class="gm-checkpoint-item" data-index="${idx}">
+          <span><span class="gm-cp-index">#${idx + 1}</span>${escapeHtml(wp.name)}</span>
+          <button type="button" class="btn-danger" data-action="remove-checkpoint">🗑️</button>
+        </div>
+      `
+          )
+          .join("") || '<p class="muted">Aucun checkpoint pour l\'instant.</p>';
+    } else {
+      gmNewTrailForm.classList.remove("hidden");
+      gmRecordingView.classList.add("hidden");
+    }
+  }
+
+  gmNewTrailForm.addEventListener("submit", (evt) => {
+    evt.preventDefault();
+    const difficultyLabel = document.getElementById("gmDifficulty").value;
+    state.recording = {
+      id: CustomTrailStore.newId(),
+      title: document.getElementById("gmName").value.trim(),
+      emoji: "🎓",
+      audience: document.getElementById("gmAudience").value,
+      difficultyLabel,
+      difficultyStars: DIFFICULTY_STARS[difficultyLabel] || 3,
+      minAge: "Trajet personnalisé",
+      setting: document.getElementById("gmSetting").value.trim() || "Trajet personnalisé",
+      intro: document.getElementById("gmIntro").value.trim(),
+      waypoints: [],
+    };
+    gmNewTrailForm.reset();
+    renderGmView();
+  });
+
+  gmCheckpointForm.addEventListener("submit", (evt) => {
+    evt.preventDefault();
+    if (!state.recording) return;
+    if (!state.position) {
+      alert("Position GPS non disponible pour le moment.");
+      return;
+    }
+    state.recording.waypoints.push({
+      name: document.getElementById("gmCpName").value.trim(),
+      desc: document.getElementById("gmCpDesc").value.trim(),
+      hint: document.getElementById("gmCpHint").value.trim(),
+      ar: document.getElementById("gmCpAr").value || null,
+      lat: state.position.lat,
+      lon: state.position.lon,
+    });
+    gmCheckpointForm.reset();
+    renderGmView();
+  });
+
+  gmCheckpointListEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest('button[data-action="remove-checkpoint"]');
+    if (!btn || !state.recording) return;
+    const idx = Number(evt.target.closest(".gm-checkpoint-item").dataset.index);
+    state.recording.waypoints.splice(idx, 1);
+    renderGmView();
+  });
+
+  document.getElementById("gmFinishBtn").addEventListener("click", () => {
+    if (!state.recording) return;
+    if (state.recording.waypoints.length === 0) {
+      alert("Ajoute au moins un checkpoint avant de terminer le trajet.");
+      return;
+    }
+    CustomTrailStore.upsert(state.recording);
+    state.trails = CustomTrailStore.loadAll();
+    state.recording = null;
+    renderGmView();
+    renderTrailList();
+  });
+
+  document.getElementById("gmCancelBtn").addEventListener("click", () => {
+    if (confirm("Annuler l'enregistrement en cours ? Les checkpoints ajoutés seront perdus.")) {
+      state.recording = null;
+      renderGmView();
+    }
+  });
+
+  function trailById(id) {
+    return state.trails.find((t) => t.id === id);
+  }
+
+  function launchTrail(trail) {
+    trail.waypoints.forEach((wp, idx) => {
+      const cache = {
+        id: `${trail.id}::${idx}`,
+        name: wp.name,
+        desc: wp.desc,
+        hint: wp.hint,
+        ar: wp.ar || null,
+        difficulty: trail.difficultyStars,
+        terrain: trail.difficultyStars,
+        lat: wp.lat,
+        lon: wp.lon,
+        found: false,
+        scenarioId: trail.id,
+        scenarioTitle: trail.title,
+        scenarioIndex: idx,
+      };
+      CacheStore.upsert(cache);
+    });
+    state.caches = CacheStore.loadAll();
+    state.targetId = `${trail.id}::0`;
+    renderCacheList();
+    renderRadar();
+    renderScenarioList();
+    document.querySelector('.tab-btn[data-tab="radar"]').click();
+  }
+
+  function renderTrailList() {
+    if (state.trails.length === 0) {
+      trailListEl.innerHTML = '<p class="muted">Aucun trajet personnalisé pour l\'instant.</p>';
+      return;
+    }
+
+    trailListEl.innerHTML = state.trails
+      .map((t) => {
+        const launched = isScenarioLaunched(t.id);
+        return `
+      <div class="scenario-card" data-trail-id="${t.id}">
+        <div class="scenario-card-head">
+          <span class="scenario-emoji">${t.emoji}</span>
+          <h3>${escapeHtml(t.title)}</h3>
+          <span class="badge badge-audience-${t.audience}">${t.audience === "enfants" ? "👧 Enfants" : "🧑 Adultes"}</span>
+          <span class="badge badge-difficulty-${t.difficultyLabel}">${t.difficultyLabel}</span>
+        </div>
+        <div class="scenario-meta">${t.waypoints.length} checkpoints · ${escapeHtml(t.setting)}</div>
+        ${t.intro ? `<div class="scenario-intro-text">${escapeHtml(t.intro)}</div>` : ""}
+        <div class="scenario-actions">
+          <button class="btn-primary" data-action="launch-trail">🚀 Lancer</button>
+          <button class="btn-secondary" data-action="export-trail">⬇️ Exporter</button>
+          <button class="btn-danger" data-action="delete-trail">🗑️ Supprimer</button>
+          ${
+            launched
+              ? '<button class="btn-secondary" data-action="goto-trail">📡 Voir sur le radar</button>' +
+                '<span class="scenario-launched-tag">✅ Lancé sur cet appareil</span>'
+              : ""
+          }
+        </div>
+      </div>
+    `;
+      })
+      .join("");
+  }
+
+  trailListEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest("button[data-action]");
+    if (!btn) return;
+    const card = evt.target.closest(".scenario-card");
+    const trailId = card.dataset.trailId;
+    const trail = trailById(trailId);
+    if (!trail) return;
+
+    switch (btn.dataset.action) {
+      case "launch-trail":
+        launchTrail(trail);
+        break;
+      case "goto-trail": {
+        const ids = scenarioCacheIds(trailId);
+        const nextUnfound = state.caches.find((c) => ids.includes(c.id) && !c.found);
+        state.targetId = nextUnfound ? nextUnfound.id : ids[0];
+        renderRadar();
+        document.querySelector('.tab-btn[data-tab="radar"]').click();
+        break;
+      }
+      case "export-trail": {
+        const blob = new Blob([JSON.stringify(trail, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `trajet-${trail.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        break;
+      }
+      case "delete-trail":
+        if (confirm(`Supprimer définitivement le trajet "${trail.title}" et ses caches associées ?`)) {
+          scenarioCacheIds(trailId).forEach((id) => CacheStore.remove(id));
+          CustomTrailStore.remove(trailId);
+          state.caches = CacheStore.loadAll();
+          state.trails = CustomTrailStore.loadAll();
+          if (state.targetId && state.targetId.startsWith(`${trailId}::`)) state.targetId = null;
+          renderCacheList();
+          renderRadar();
+          renderTrailList();
+        }
+        break;
+    }
+  });
+
+  document.getElementById("importTrailInput").addEventListener("change", (evt) => {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const trail = JSON.parse(reader.result);
+        if (!trail || !Array.isArray(trail.waypoints) || !trail.title) {
+          throw new Error("Format de trajet invalide");
+        }
+        if (trailById(trail.id)) trail.id = CustomTrailStore.newId();
+        CustomTrailStore.upsert(trail);
+        state.trails = CustomTrailStore.loadAll();
+        renderTrailList();
+        alert(`Trajet "${trail.title}" importé.`);
+      } catch (e) {
+        alert("Impossible de lire ce fichier : " + e.message);
+      } finally {
+        evt.target.value = "";
+      }
+    };
+    reader.readAsText(file);
+  });
+
   // ---------- Cache list ----------
   const cacheListEl = document.getElementById("cacheList");
 
@@ -403,6 +769,7 @@
         }</div>
         ${c.desc ? `<div class="cache-desc">${escapeHtml(c.desc)}</div>` : ""}
         ${c.hint ? `<div class="cache-hint">💡 ${escapeHtml(c.hint)}</div>` : ""}
+        ${c.ar && getArObject(c.ar) ? `<div class="cache-hint">📷 Scan : ${getArObject(c.ar).emoji} ${escapeHtml(getArObject(c.ar).label)}</div>` : ""}
         <div class="cache-actions">
           <button class="btn-secondary" data-action="target">📡 Pointer</button>
           <button class="btn-secondary" data-action="found">${c.found ? "↩️ Marquer non trouvée" : "✅ Marquer trouvée"}</button>
@@ -445,10 +812,21 @@
           renderCacheList();
           renderRadar();
           renderScenarioList();
+          renderTrailList();
         }
         break;
     }
   });
+
+  // ---------- AR object select helper ----------
+  function populateArSelect(selectEl) {
+    selectEl.innerHTML =
+      '<option value="">Aucun</option>' +
+      AR_OBJECTS.map((o) => `<option value="${o.id}">${o.emoji} ${escapeHtml(o.label)}</option>`).join("");
+  }
+
+  populateArSelect(document.getElementById("fArObject"));
+  populateArSelect(document.getElementById("gmCpAr"));
 
   // ---------- Add / edit form ----------
   const form = document.getElementById("cacheForm");
@@ -459,6 +837,7 @@
     document.getElementById("fName").value = cache.name;
     document.getElementById("fDesc").value = cache.desc || "";
     document.getElementById("fHint").value = cache.hint || "";
+    document.getElementById("fArObject").value = cache.ar || "";
     document.getElementById("fDifficulty").value = cache.difficulty;
     document.getElementById("fTerrain").value = cache.terrain;
     document.getElementById("fLat").value = cache.lat;
@@ -492,6 +871,7 @@
       name: document.getElementById("fName").value.trim(),
       desc: document.getElementById("fDesc").value.trim(),
       hint: document.getElementById("fHint").value.trim(),
+      ar: document.getElementById("fArObject").value || null,
       difficulty: Number(document.getElementById("fDifficulty").value),
       terrain: Number(document.getElementById("fTerrain").value),
       lat: Number(document.getElementById("fLat").value),
@@ -534,6 +914,7 @@
         state.caches = merged;
         renderCacheList();
         renderScenarioList();
+        renderTrailList();
         alert(`${imported.length} cache(s) importée(s).`);
       } catch (e) {
         alert("Impossible de lire ce fichier : " + e.message);
@@ -552,6 +933,7 @@
       renderCacheList();
       renderRadar();
       renderScenarioList();
+      renderTrailList();
     }
   });
 
@@ -566,4 +948,6 @@
   renderCacheList();
   renderRadar();
   renderScenarioList();
+  renderGmView();
+  renderTrailList();
 })();

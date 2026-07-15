@@ -51,6 +51,66 @@ le relancer depuis un autre point de départ, et de nouveaux scénarios
 peuvent être ajoutés simplement en complétant le tableau `SCENARIOS` dans
 `js/scenarios.js`.
 
+## Mode Maître du jeu (créer son propre trajet)
+
+L'onglet **🎓 Maître du jeu** permet à une personne organisatrice de créer un
+trajet sur mesure en le parcourant réellement, plutôt que d'utiliser un
+scénario préenregistré :
+
+1. Remplis le formulaire "Nouveau trajet" (nom, introduction, public,
+   difficulté, lieu) et appuie sur **"▶️ Démarrer l'enregistrement"**.
+2. Déplace-toi jusqu'au premier checkpoint réel, remplis son nom, sa
+   description, son indice et — en option — l'**objet virtuel à scanner**
+   (voir plus bas), puis appuie sur **"📍 Ajouter ce checkpoint ici"** : sa
+   position GPS exacte est enregistrée.
+3. Répète pour chaque checkpoint du trajet.
+4. Appuie sur **"✅ Terminer le trajet"** : il apparaît dans **📓 Mes trajets**,
+   au même endroit que les scénarios préenregistrés (mêmes actions : Lancer,
+   Voir sur le radar, Réinitialiser).
+
+**Contrairement aux scénarios préenregistrés** (définis par cap + distance
+depuis un point de départ choisi au moment de jouer), un trajet créé en mode
+maître du jeu enregistre des **coordonnées GPS absolues**, puisqu'il
+correspond à un parcours réellement marché. Résultat : pas besoin de point
+de départ commun pour le rejouer ailleurs. Pour le partager avec les
+joueurs :
+
+- Appuie sur **"⬇️ Exporter"** sur la carte du trajet : ça télécharge un
+  fichier `.json`.
+- Transfère ce fichier aux appareils des joueurs par câble, Bluetooth,
+  AirDrop, carte SD ou clé USB (aucun réseau requis).
+- Sur chaque appareil joueur, dans l'onglet Maître du jeu, utilise
+  **"⬆️ Importer un trajet"** puis appuie sur **"🚀 Lancer"** : le parcours
+  est rejoué à l'identique, coordonnée par coordonnée.
+
+## Scan caméra (indice sous forme d'objet virtuel)
+
+Quand un checkpoint (scénario, trajet personnalisé ou cache manuelle) a un
+**objet virtuel** assigné, l'onglet **📡 Radar** affiche un bouton
+**"📷 Scanner la zone"** une fois que tu es à moins de 30 mètres. En
+l'appuyant :
+
+- La caméra arrière s'ouvre en plein écran.
+- Un objet qui "ne devrait pas être dans la réalité" (une orbe, un fantôme,
+  une soucoupe, une clé dorée...) flotte en surimpression du flux caméra,
+  avec un léger effet de profondeur qui réagit aux mouvements du téléphone.
+- Une fois repéré, appuie sur **"✅ J'ai trouvé l'objet !"** pour marquer le
+  checkpoint comme trouvé.
+
+**Important à savoir sur cette réalité augmentée légère** : l'objet flotte
+par-dessus l'image de la caméra avec une parallaxe basée sur l'orientation
+du téléphone — il ne reste pas "ancré" à un endroit précis du décor si tu
+tournes complètement autour (ce qui demanderait un suivi spatial de type
+SLAM/WebXR, peu fiable hors-ligne et beaucoup plus lourd à développer). Le
+tout fonctionne 100% sur l'appareil, sans réseau ni bibliothèque externe.
+Si la caméra n'est pas disponible (permission refusée, appareil sans
+caméra), un message s'affiche et le bouton "J'ai trouvé l'objet !" reste
+utilisable pour ne pas bloquer la partie.
+
+Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
+scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
+dans le formulaire de checkpoint du mode Maître du jeu.
+
 ## Installation sur un téléphone
 
 **Point important** : comme toute application web, elle doit être ouverte
@@ -109,8 +169,12 @@ connecté :
    mette bien tous les fichiers en cache.
 2. Vérifie que le voyant en haut de l'écran passe au vert avec
    **"Position acquise"** — ça confirme que le GPS fonctionne.
-3. Si tu utilises un scénario préenregistré ou des caches personnalisées,
-   prépare-les maintenant (voir ci-dessous) : ensuite, tu peux passer en
+3. Si tu comptes utiliser le scan caméra, ouvre une fois l'onglet Radar et
+   lance un scan pour autoriser l'accès à la caméra — sinon le navigateur
+   redemandera la permission au premier scan sur le terrain, ce qui
+   fonctionne aussi hors-ligne mais autant l'avoir déjà accordée.
+4. Si tu utilises un scénario préenregistré ou des caches personnalisées,
+   prépare-les maintenant (voir ci-dessus) : ensuite, tu peux passer en
    mode avion (GPS activé) ou partir en zone blanche sans problème.
 
 ## Utilisation pas à pas
@@ -186,6 +250,13 @@ Dans l'onglet **💾 Données** :
 - **L'app semble "figée" après une mise à jour du contenu** : rouvre-la une
   fois connectée au réseau pour que le service worker récupère la nouvelle
   version.
+- **Le bouton "Scanner la zone" n'apparaît pas** : il ne s'affiche que si le
+  checkpoint ciblé a un objet virtuel assigné et que tu es à moins de 30 m
+  (la distance restante est affichée en attendant).
+- **"Caméra indisponible"** : vérifie que la permission caméra a été
+  accordée au navigateur/à l'app dans les réglages du téléphone. En
+  attendant, le bouton "J'ai trouvé l'objet !" reste utilisable pour ne pas
+  bloquer la partie.
 
 ## Développement local
 
@@ -208,9 +279,10 @@ geocaching-offline/
 ├── css/style.css
 ├── js/
 │   ├── geo.js            # distance/cap (haversine, bearing) + destinationPoint (cap+distance -> lat/lon)
-│   ├── db.js             # persistance localStorage
+│   ├── db.js             # persistance localStorage (caches + trajets personnalisés)
 │   ├── scenarios.js      # scénarios préenregistrés (enfants/adultes x facile/moyen/difficile)
-│   └── app.js            # logique de l'app (GPS, boussole, scénarios, CRUD, import/export)
+│   ├── ar-objects.js     # bibliothèque d'objets virtuels pour le scan caméra
+│   └── app.js            # logique de l'app (GPS, boussole, scénarios, mode MJ, scan AR, CRUD, import/export)
 └── icons/icon.svg
 ```
 

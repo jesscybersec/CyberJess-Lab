@@ -22,6 +22,7 @@
 <nav class="tabs">
   <button class="tab-btn active" data-tab="radar">📡 Radar</button>
   <button class="tab-btn" data-tab="scenarios">🎬 Scénarios</button>
+  <button class="tab-btn" data-tab="gm">🎓 Maître du jeu</button>
   <button class="tab-btn" data-tab="list">🗂️ Caches</button>
   <button class="tab-btn" data-tab="add">➕ Ajouter</button>
   <button class="tab-btn" data-tab="data">💾 Données</button>
@@ -91,6 +92,87 @@
     </div>
   </section>
 
+  <!-- GAME MASTER TAB -->
+  <section id="tab-gm" class="tab-panel">
+    <p class="muted scenario-intro">
+      Le mode maître du jeu te permet de créer ton propre trajet en le parcourant
+      réellement : à chaque checkpoint, appuie sur "Ajouter ce checkpoint ici"
+      pour enregistrer sa position GPS exacte. Le trajet obtenu peut être lancé
+      directement, ou exporté en fichier pour être partagé (câble, Bluetooth,
+      carte SD...) et rejoué à l'identique sur d'autres appareils, sans réseau.
+    </p>
+
+    <!-- New trail form (hidden while recording) -->
+    <form id="gmNewTrailForm" class="cache-form">
+      <h2>Nouveau trajet</h2>
+      <label>Nom du trajet
+        <input type="text" id="gmName" required placeholder="La Chasse du Manoir">
+      </label>
+      <label>Introduction / mise en contexte
+        <textarea id="gmIntro" rows="3" placeholder="Le contexte de l'aventure pour les joueurs..."></textarea>
+      </label>
+      <div class="row">
+        <label>Public
+          <select id="gmAudience">
+            <option value="enfants">👧 Enfants</option>
+            <option value="adultes" selected>🧑 Adultes</option>
+          </select>
+        </label>
+        <label>Difficulté
+          <select id="gmDifficulty">
+            <option value="Facile">Facile</option>
+            <option value="Moyen" selected>Moyen</option>
+            <option value="Difficile">Difficile</option>
+          </select>
+        </label>
+      </div>
+      <label>Lieu / terrain
+        <input type="text" id="gmSetting" placeholder="Parc du Manoir">
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">▶️ Démarrer l'enregistrement</button>
+      </div>
+    </form>
+
+    <!-- Recording view -->
+    <div id="gmRecordingView" class="gm-recording hidden">
+      <h2 id="gmRecordingTitle">Enregistrement en cours</h2>
+      <p class="muted">Déplace-toi jusqu'au prochain checkpoint, puis enregistre sa position.</p>
+
+      <div id="gmCheckpointList" class="gm-checkpoint-list"></div>
+
+      <form id="gmCheckpointForm" class="cache-form">
+        <label>Nom du checkpoint
+          <input type="text" id="gmCpName" required placeholder="La porte grinçante">
+        </label>
+        <label>Description
+          <textarea id="gmCpDesc" rows="2" placeholder="Contexte de ce checkpoint..."></textarea>
+        </label>
+        <label>Indice
+          <input type="text" id="gmCpHint" placeholder="Regarde derrière la statue">
+        </label>
+        <label>Objet virtuel à scanner (optionnel)
+          <select id="gmCpAr"></select>
+        </label>
+        <button type="submit" class="btn-primary">📍 Ajouter ce checkpoint ici</button>
+      </form>
+
+      <div class="form-actions">
+        <button type="button" id="gmFinishBtn" class="btn-primary">✅ Terminer le trajet</button>
+        <button type="button" id="gmCancelBtn" class="btn-danger">✖️ Annuler l'enregistrement</button>
+      </div>
+    </div>
+
+    <h2 class="gm-trails-heading">📓 Mes trajets</h2>
+    <div class="data-actions">
+      <label class="btn-secondary file-label">
+        ⬆️ Importer un trajet
+        <input type="file" id="importTrailInput" accept="application/json" class="hidden">
+      </label>
+    </div>
+    <div id="trailList" class="scenario-list"></div>
+  </section>
+
   <!-- LIST TAB -->
   <section id="tab-list" class="tab-panel">
     <div id="cacheList" class="cache-list">
@@ -110,6 +192,9 @@
       </label>
       <label>Indice (optionnel)
         <input type="text" id="fHint" placeholder="Sous la pierre plate près du chêne">
+      </label>
+      <label>Objet virtuel à scanner (optionnel)
+        <select id="fArObject"></select>
       </label>
       <div class="row">
         <label>Difficulté
@@ -178,9 +263,24 @@
 
 </main>
 
+<!-- AR scanner overlay -->
+<div id="arScanner" class="ar-scanner hidden">
+  <video id="arVideo" class="ar-video" autoplay playsinline muted></video>
+  <canvas id="arCanvas" class="ar-canvas"></canvas>
+  <div class="ar-ui">
+    <div id="arObjectLabel" class="ar-object-label"></div>
+    <div id="arError" class="ar-error hidden"></div>
+    <div class="ar-actions">
+      <button id="arFoundBtn" class="btn-primary">✅ J'ai trouvé l'objet !</button>
+      <button id="arCloseBtn" class="btn-secondary">✖️ Fermer</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/geo.js"></script>
 <script src="js/db.js"></script>
 <script src="js/scenarios.js"></script>
+<script src="js/ar-objects.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
