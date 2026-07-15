@@ -1,0 +1,303 @@
+// Scénarios préenregistrés : chaque parcours est défini par des points
+// RELATIFS (cap + distance) depuis un point de départ choisi sur place.
+// Comme le calcul (Geo.destinationPoint) est purement géométrique, deux
+// appareils qui démarrent le même scénario depuis le même point de départ
+// obtiennent exactement les mêmes caches, sans échanger la moindre donnée
+// entre eux — donc sans réseau, cellulaire ou Wi-Fi, requis.
+const SCENARIOS = [
+  {
+    id: "kids-easy-garden",
+    title: "Le Trésor du Jardin Enchanté",
+    emoji: "🧚",
+    audience: "enfants",
+    difficultyLabel: "Facile",
+    difficultyStars: 1,
+    minAge: "5-8 ans",
+    setting: "Jardin, cour ou petit parc",
+    intro:
+      "Les lutins du jardin ont caché leur trésor avant de s'envoler pour l'hiver. " +
+      "Suis les indices pour retrouver leur cachette secrète !",
+    waypoints: [
+      {
+        bearing: 20,
+        distance: 12,
+        name: "L'ombre du grand arbre",
+        desc: "Un lutin a laissé une empreinte de pas ici.",
+        hint: "Cherche l'endroit le plus frais du jardin, là où le soleil ne passe pas.",
+      },
+      {
+        bearing: 110,
+        distance: 18,
+        name: "Le caillou qui rit",
+        desc: "On dit que ce caillou sourit quand on le regarde de près.",
+        hint: "Regarde près du sol, un objet un peu rond et un peu bizarre t'attend.",
+      },
+      {
+        bearing: 200,
+        distance: 15,
+        name: "La cachette des fleurs",
+        desc: "Les fleurs les plus colorées gardent un secret.",
+        hint: "Approche-toi doucement pour ne pas réveiller les petites bêtes.",
+      },
+      {
+        bearing: 320,
+        distance: 20,
+        name: "Le trésor des lutins !",
+        desc: "Bravo, tu as trouvé la cachette finale ! Une petite surprise t'attend ici.",
+        hint: "C'est le dernier arrêt : regarde bien tout autour de toi.",
+      },
+    ],
+  },
+  {
+    id: "kids-medium-pirates",
+    title: "Mission Pirates au Parc",
+    emoji: "🏴‍☠️",
+    audience: "enfants",
+    difficultyLabel: "Moyen",
+    difficultyStars: 3,
+    minAge: "8-11 ans",
+    setting: "Parc de quartier",
+    intro:
+      "Le capitaine Barbe-Rouge a perdu sa carte au trésor dans le parc ! " +
+      "Suivez le cap du radar comme de vrais pirates pour retrouver le butin caché en 5 étapes.",
+    waypoints: [
+      {
+        bearing: 45,
+        distance: 60,
+        name: "La crique du débarquement",
+        desc: "L'équipage a débarqué ici en premier.",
+        hint: "Cherche un endroit dégagé, comme une plage pour un bateau.",
+      },
+      {
+        bearing: 130,
+        distance: 90,
+        name: "Le rocher du perroquet",
+        desc: "Un vieux perroquet aurait surveillé cet endroit.",
+        hint: "Un banc, un arbre ou un rocher fait un bon perchoir.",
+      },
+      {
+        bearing: 210,
+        distance: 70,
+        name: "Le marécage des crabes",
+        desc: "Attention où vous mettez les pieds, moussaillons !",
+        hint: "Reste sur le chemin si le sol est humide par ici.",
+      },
+      {
+        bearing: 280,
+        distance: 100,
+        name: "La croisée des vents",
+        desc: "Quatre chemins se croisent, mais un seul mène au trésor.",
+        hint: "Regarde bien le radar : la flèche ne ment jamais.",
+      },
+      {
+        bearing: 15,
+        distance: 50,
+        name: "Le coffre du capitaine !",
+        desc: "Le butin de Barbe-Rouge est enfin à vous !",
+        hint: "C'est ici que l'aventure se termine, matelot !",
+      },
+    ],
+  },
+  {
+    id: "kids-hard-forest",
+    title: "L'Énigme de la Forêt Mystérieuse",
+    emoji: "🌲",
+    audience: "enfants",
+    difficultyLabel: "Difficile",
+    difficultyStars: 4,
+    minAge: "11-14 ans",
+    setting: "Forêt, grand parc ou sentier",
+    intro:
+      "Une légende raconte qu'un ancien gardien de la forêt a caché un objet magique. " +
+      "Pour le retrouver, il faudra résoudre de petites énigmes en plus de suivre le radar.",
+    waypoints: [
+      {
+        bearing: 350,
+        distance: 120,
+        name: "Le sentier du silence",
+        desc: "Avance sans faire de bruit, comme un vrai explorateur.",
+        hint: "Énigme : 3 arbres plus loin qu'un banc, cherche une pierre marquée.",
+      },
+      {
+        bearing: 80,
+        distance: 150,
+        name: "Le pont des échos",
+        desc: "Ici, les sons voyagent loin. Écoute bien.",
+        hint: "Énigme : additionne 2 + 3, avance de ce nombre de grands pas dans le cap indiqué.",
+      },
+      {
+        bearing: 160,
+        distance: 180,
+        name: "La clairière cachée",
+        desc: "Un rayon de soleil perce toujours ici, même en plein bois.",
+        hint: "Énigme : le prochain indice est caché là où l'ombre est la plus courte à midi.",
+      },
+      {
+        bearing: 250,
+        distance: 140,
+        name: "Le rocher gravé",
+        desc: "Une ancienne inscription est à moitié effacée sur une pierre.",
+        hint: "Énigme : cherche un symbole en forme de spirale, il indique la direction du trésor.",
+      },
+      {
+        bearing: 30,
+        distance: 100,
+        name: "Le trésor du gardien !",
+        desc: "L'objet magique de la légende est enfin retrouvé.",
+        hint: "Dernier arrêt : regarde en hauteur, pas seulement au sol.",
+      },
+    ],
+  },
+  {
+    id: "adults-easy-heritage",
+    title: "Balade Rétro du Vieux Quartier",
+    emoji: "🏛️",
+    audience: "adultes",
+    difficultyLabel: "Facile",
+    difficultyStars: 2,
+    minAge: "Tout public",
+    setting: "Quartier historique, centre-ville",
+    intro:
+      "Une promenade tranquille sur le thème du patrimoine local : quatre arrêts, " +
+      "quelques anecdotes fictives à imaginer sur place, et une jolie balade sans stress.",
+    waypoints: [
+      {
+        bearing: 60,
+        distance: 150,
+        name: "La place de l'ancien marché",
+        desc: "Autrefois, les commerçants s'y retrouvaient chaque semaine.",
+        hint: "Cherche un point de repère central, comme une fontaine ou une place ouverte.",
+      },
+      {
+        bearing: 140,
+        distance: 200,
+        name: "La façade oubliée",
+        desc: "Un détail architectural que peu de passants remarquent.",
+        hint: "Lève les yeux : les indices sont souvent au-dessus du rez-de-chaussée.",
+      },
+      {
+        bearing: 220,
+        distance: 180,
+        name: "Le passage discret",
+        desc: "Un raccourci que seuls les habitués connaissent.",
+        hint: "Cherche une petite ruelle ou un passage entre deux bâtiments.",
+      },
+      {
+        bearing: 320,
+        distance: 160,
+        name: "Le point de vue final",
+        desc: "Le meilleur endroit pour terminer la balade en beauté.",
+        hint: "C'est la dernière étape : profite du moment avant de conclure la balade.",
+      },
+    ],
+  },
+  {
+    id: "adults-medium-spy",
+    title: "Chasse à l'Espion",
+    emoji: "🕵️",
+    audience: "adultes",
+    difficultyLabel: "Moyen",
+    difficultyStars: 3,
+    minAge: "Ados et adultes",
+    setting: "Parc, campus ou grand quartier",
+    intro:
+      "Un agent double a laissé une série de messages codés avant de disparaître. " +
+      "Suivez le radar et déchiffrez chaque indice pour reconstituer sa dernière mission.",
+    waypoints: [
+      {
+        bearing: 15,
+        distance: 250,
+        name: "Point de contact Alpha",
+        desc: "Premier lieu de rendez-vous de l'agent.",
+        hint: "Indice : compte les lettres du mot 'ESPION' (6) — avance de 6 fois 10 pas.",
+      },
+      {
+        bearing: 95,
+        distance: 300,
+        name: "La boîte aux lettres morte",
+        desc: "Un message aurait été déposé ici, caché à la vue de tous.",
+        hint: "Indice : cherche un objet fixe et discret, à hauteur de main.",
+      },
+      {
+        bearing: 175,
+        distance: 220,
+        name: "Le rendez-vous manqué",
+        desc: "L'agent ne s'est jamais présenté à ce point.",
+        hint: "Indice codé (décalage de 1 lettre) : 'sbuf' → décale chaque lettre d'un cran en arrière.",
+      },
+      {
+        bearing: 260,
+        distance: 350,
+        name: "La filature",
+        desc: "Quelqu'un a suivi l'agent jusqu'ici.",
+        hint: "Indice : le prochain cap est le double du premier (15° x 2), mais utilise celui du radar.",
+      },
+      {
+        bearing: 340,
+        distance: 280,
+        name: "Le dossier final",
+        desc: "La preuve ultime de la mission de l'agent, enfin récupérée.",
+        hint: "Dernier arrêt : la mission est terminée, refermez le dossier.",
+      },
+    ],
+  },
+  {
+    id: "adults-hard-ghost-protocol",
+    title: "Protocole Fantôme — Signal Zéro",
+    emoji: "📡",
+    audience: "adultes",
+    difficultyLabel: "Difficile",
+    difficultyStars: 5,
+    minAge: "Adultes",
+    setting: "Grand parc, forêt ou zone étendue (1 km+)",
+    intro:
+      "Un incident a coupé tout le réseau cellulaire de la zone. Les dernières coordonnées " +
+      "connues d'une cellule clandestine ont été chiffrées avant la coupure. Sans signal, " +
+      "sans data, une seule chose fonctionne encore : les satellites GPS. À vous de reconstituer " +
+      "le parcours, point par point, en déchiffrant chaque message intercepté.",
+    waypoints: [
+      {
+        bearing: 10,
+        distance: 300,
+        name: "Balise Zéro",
+        desc: "Dernier signal capté avant la coupure générale.",
+        hint: "Message chiffré (César, décalage 3) : 'vljqdo chur' — décale chaque lettre de 3 crans vers l'arrière.",
+      },
+      {
+        bearing: 75,
+        distance: 450,
+        name: "Relais abandonné",
+        desc: "Une ancienne antenne, désormais silencieuse, marque ce point.",
+        hint: "Message chiffré (César, décalage 5) : 'wjqfnx rtwy' à décaler de 5 crans vers l'arrière.",
+      },
+      {
+        bearing: 150,
+        distance: 380,
+        name: "Le nœud aveugle",
+        desc: "Un carrefour où plusieurs pistes se croisent sans indication.",
+        hint: "Indice binaire : 01000011 01100001 01110000 = 3 lettres ASCII à convertir (indice : 'Cap').",
+      },
+      {
+        bearing: 230,
+        distance: 500,
+        name: "Le bunker silencieux",
+        desc: "Une structure discrète, hors de portée de tout capteur réseau.",
+        hint: "Additionne les deux premiers caps de ce parcours (10 + 75 = 85), divise par 2 : le résultat est un indice, pas le cap réel.",
+      },
+      {
+        bearing: 300,
+        distance: 400,
+        name: "Le dernier saut",
+        desc: "Le point de rupture avant l'extraction finale.",
+        hint: "Message chiffré (César, décalage 1) : 'tbvu gjobm' à décaler de 1 cran vers l'arrière.",
+      },
+      {
+        bearing: 20,
+        distance: 250,
+        name: "Extraction — Signal rétabli",
+        desc: "Mission accomplie. Le protocole fantôme est levé.",
+        hint: "Dernier arrêt : c'est ici que le réseau, symboliquement, reprend vie.",
+      },
+    ],
+  },
+];

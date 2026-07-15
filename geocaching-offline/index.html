@@ -21,6 +21,7 @@
 
 <nav class="tabs">
   <button class="tab-btn active" data-tab="radar">📡 Radar</button>
+  <button class="tab-btn" data-tab="scenarios">🎬 Scénarios</button>
   <button class="tab-btn" data-tab="list">🗂️ Caches</button>
   <button class="tab-btn" data-tab="add">➕ Ajouter</button>
   <button class="tab-btn" data-tab="data">💾 Données</button>
@@ -39,6 +40,54 @@
     </div>
     <div class="coords-readout" id="coordsReadout">
       lat: -- , lon: -- (précision: --)
+    </div>
+  </section>
+
+  <!-- SCENARIOS TAB -->
+  <section id="tab-scenarios" class="tab-panel">
+    <p class="muted scenario-intro">
+      Ces parcours sont préenregistrés dans l'application (aucun réseau requis).
+      Ils sont définis par cap + distance depuis un point de départ que tu choisis
+      sur place : plusieurs appareils qui démarrent au même endroit obtiennent
+      exactement les mêmes caches, sans rien s'échanger entre eux.
+    </p>
+
+    <div class="scenario-filters">
+      <select id="filterAudience">
+        <option value="">Tous les publics</option>
+        <option value="enfants">👧 Enfants</option>
+        <option value="adultes">🧑 Adultes</option>
+      </select>
+      <select id="filterDifficulty">
+        <option value="">Toutes difficultés</option>
+        <option value="Facile">Facile</option>
+        <option value="Moyen">Moyen</option>
+        <option value="Difficile">Difficile</option>
+      </select>
+    </div>
+
+    <div id="scenarioList" class="scenario-list"></div>
+
+    <!-- Origin picker, shown when launching a scenario -->
+    <div id="originPicker" class="origin-picker hidden">
+      <h2 id="originScenarioTitle">Lancer le scénario</h2>
+      <p class="muted">
+        Place-toi au point de départ physique du parcours, puis confirme.
+        Chaque appareil doit démarrer depuis ce même point.
+      </p>
+      <div class="row">
+        <label>Latitude de départ
+          <input type="number" step="any" id="originLat">
+        </label>
+        <label>Longitude de départ
+          <input type="number" step="any" id="originLon">
+        </label>
+      </div>
+      <button type="button" id="useCurrentPosOrigin" class="btn-secondary">📍 Utiliser ma position GPS actuelle</button>
+      <div class="form-actions">
+        <button type="button" id="confirmLaunch" class="btn-primary">Confirmer le départ</button>
+        <button type="button" id="cancelLaunch" class="btn-secondary">Annuler</button>
+      </div>
     </div>
   </section>
 
@@ -131,6 +180,7 @@
 
 <script src="js/geo.js"></script>
 <script src="js/db.js"></script>
+<script src="js/scenarios.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

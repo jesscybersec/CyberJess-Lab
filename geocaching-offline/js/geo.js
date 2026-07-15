@@ -26,5 +26,30 @@ const Geo = (() => {
     return `${Math.round(meters)} m`;
   }
 
-  return { distanceMeters, bearingDegrees, formatDistance };
+  // Given a start point, a bearing (degrees from true north) and a distance
+  // in meters, returns the resulting {lat, lon}. Used to turn a scenario's
+  // relative waypoints (bearing + distance) into real coordinates once a
+  // physical starting point is chosen on-site — every device that starts
+  // from the same spot computes the exact same waypoints independently,
+  // with no data exchanged between devices.
+  function destinationPoint(lat, lon, bearingDeg, distanceM) {
+    const delta = distanceM / R;
+    const theta = toRad(bearingDeg);
+    const phi1 = toRad(lat);
+    const lambda1 = toRad(lon);
+
+    const phi2 = Math.asin(
+      Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(theta)
+    );
+    const lambda2 =
+      lambda1 +
+      Math.atan2(
+        Math.sin(theta) * Math.sin(delta) * Math.cos(phi1),
+        Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2)
+      );
+
+    return { lat: toDeg(phi2), lon: ((toDeg(lambda2) + 540) % 360) - 180 };
+  }
+
+  return { distanceMeters, bearingDegrees, formatDistance, destinationPoint };
 })();

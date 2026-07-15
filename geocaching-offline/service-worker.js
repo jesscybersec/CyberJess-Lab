@@ -1,4 +1,4 @@
-const CACHE_NAME = "geocache-offline-v1";
+const CACHE_NAME = "geocache-offline-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "./css/style.css",
   "./js/geo.js",
   "./js/db.js",
+  "./js/scenarios.js",
   "./js/app.js",
   "./icons/icon.svg",
 ];

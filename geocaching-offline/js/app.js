@@ -200,14 +200,175 @@
     `;
   }
 
-  // ---------- Cache list ----------
-  const cacheListEl = document.getElementById("cacheList");
+  // ---------- Scenarios ----------
+  const scenarioListEl = document.getElementById("scenarioList");
+  const filterAudienceEl = document.getElementById("filterAudience");
+  const filterDifficultyEl = document.getElementById("filterDifficulty");
+  const originPickerEl = document.getElementById("originPicker");
+  const originScenarioTitleEl = document.getElementById("originScenarioTitle");
+  let pendingScenario = null;
 
   function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
   }
+
+  function scenarioCacheIds(scenarioId) {
+    return state.caches.filter((c) => c.scenarioId === scenarioId).map((c) => c.id);
+  }
+
+  function isScenarioLaunched(scenarioId) {
+    return scenarioCacheIds(scenarioId).length > 0;
+  }
+
+  function renderScenarioList() {
+    const audienceFilter = filterAudienceEl.value;
+    const difficultyFilter = filterDifficultyEl.value;
+
+    const filtered = SCENARIOS.filter(
+      (s) =>
+        (!audienceFilter || s.audience === audienceFilter) &&
+        (!difficultyFilter || s.difficultyLabel === difficultyFilter)
+    );
+
+    if (filtered.length === 0) {
+      scenarioListEl.innerHTML = '<p class="muted">Aucun scénario ne correspond à ces filtres.</p>';
+      return;
+    }
+
+    scenarioListEl.innerHTML = filtered
+      .map((s) => {
+        const launched = isScenarioLaunched(s.id);
+        return `
+      <div class="scenario-card" data-scenario-id="${s.id}">
+        <div class="scenario-card-head">
+          <span class="scenario-emoji">${s.emoji}</span>
+          <h3>${escapeHtml(s.title)}</h3>
+          <span class="badge badge-audience-${s.audience}">${s.audience === "enfants" ? "👧 Enfants" : "🧑 Adultes"}</span>
+          <span class="badge badge-difficulty-${s.difficultyLabel}">${s.difficultyLabel}</span>
+        </div>
+        <div class="scenario-meta">
+          ${s.waypoints.length} étapes · ${escapeHtml(s.minAge)} · ${escapeHtml(s.setting)}
+        </div>
+        <div class="scenario-intro-text">${escapeHtml(s.intro)}</div>
+        <div class="scenario-actions">
+          <button class="btn-primary" data-action="launch">🚀 Lancer ici</button>
+          ${
+            launched
+              ? '<button class="btn-secondary" data-action="goto">📡 Voir sur le radar</button>' +
+                '<button class="btn-danger" data-action="reset">↺ Réinitialiser</button>' +
+                '<span class="scenario-launched-tag">✅ Lancé sur cet appareil</span>'
+              : ""
+          }
+        </div>
+      </div>
+    `;
+      })
+      .join("");
+  }
+
+  filterAudienceEl.addEventListener("change", renderScenarioList);
+  filterDifficultyEl.addEventListener("change", renderScenarioList);
+
+  function showOriginPicker(scenario) {
+    pendingScenario = scenario;
+    originScenarioTitleEl.textContent = `Lancer : ${scenario.title}`;
+    document.getElementById("originLat").value = state.position ? state.position.lat : "";
+    document.getElementById("originLon").value = state.position ? state.position.lon : "";
+    originPickerEl.classList.remove("hidden");
+    originPickerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function hideOriginPicker() {
+    pendingScenario = null;
+    originPickerEl.classList.add("hidden");
+  }
+
+  document.getElementById("useCurrentPosOrigin").addEventListener("click", () => {
+    if (!state.position) {
+      alert("Position GPS non disponible pour le moment.");
+      return;
+    }
+    document.getElementById("originLat").value = state.position.lat;
+    document.getElementById("originLon").value = state.position.lon;
+  });
+
+  document.getElementById("cancelLaunch").addEventListener("click", hideOriginPicker);
+
+  document.getElementById("confirmLaunch").addEventListener("click", () => {
+    if (!pendingScenario) return;
+    const originLat = Number(document.getElementById("originLat").value);
+    const originLon = Number(document.getElementById("originLon").value);
+    if (Number.isNaN(originLat) || Number.isNaN(originLon)) {
+      alert("Merci d'indiquer une latitude et une longitude de départ valides.");
+      return;
+    }
+
+    const scenario = pendingScenario;
+    scenario.waypoints.forEach((wp, idx) => {
+      const dest = Geo.destinationPoint(originLat, originLon, wp.bearing, wp.distance);
+      const cache = {
+        id: `${scenario.id}::${idx}`,
+        name: wp.name,
+        desc: wp.desc,
+        hint: wp.hint,
+        difficulty: scenario.difficultyStars,
+        terrain: scenario.difficultyStars,
+        lat: dest.lat,
+        lon: dest.lon,
+        found: false,
+        scenarioId: scenario.id,
+        scenarioTitle: scenario.title,
+        scenarioIndex: idx,
+      };
+      CacheStore.upsert(cache);
+    });
+
+    state.caches = CacheStore.loadAll();
+    state.targetId = `${scenario.id}::0`;
+    hideOriginPicker();
+    renderScenarioList();
+    renderCacheList();
+    renderRadar();
+    document.querySelector('.tab-btn[data-tab="radar"]').click();
+  });
+
+  scenarioListEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest("button[data-action]");
+    if (!btn) return;
+    const card = evt.target.closest(".scenario-card");
+    const scenarioId = card.dataset.scenarioId;
+    const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+    if (!scenario) return;
+
+    switch (btn.dataset.action) {
+      case "launch":
+        showOriginPicker(scenario);
+        break;
+      case "goto": {
+        const ids = scenarioCacheIds(scenarioId);
+        const nextUnfound = state.caches.find((c) => ids.includes(c.id) && !c.found);
+        state.targetId = nextUnfound ? nextUnfound.id : ids[0];
+        renderRadar();
+        document.querySelector('.tab-btn[data-tab="radar"]').click();
+        break;
+      }
+      case "reset":
+        if (confirm(`Réinitialiser le scénario "${scenario.title}" sur cet appareil ? Les caches associées seront supprimées.`)) {
+          scenarioCacheIds(scenarioId).forEach((id) => CacheStore.remove(id));
+          state.caches = CacheStore.loadAll();
+          if (state.targetId && state.targetId.startsWith(`${scenarioId}::`)) state.targetId = null;
+          renderScenarioList();
+          renderCacheList();
+          renderRadar();
+        }
+        break;
+    }
+  });
+
+  // ---------- Cache list ----------
+  const cacheListEl = document.getElementById("cacheList");
 
   function renderCacheList() {
     if (state.caches.length === 0) {
@@ -237,7 +398,9 @@
           <h3>${escapeHtml(c.name)}</h3>
           <span class="cache-dist">${c.distance !== null ? Geo.formatDistance(c.distance) : "--"}</span>
         </div>
-        <div class="cache-meta">D${c.difficulty}/T${c.terrain} · lat ${c.lat.toFixed(5)}, lon ${c.lon.toFixed(5)}</div>
+        <div class="cache-meta">D${c.difficulty}/T${c.terrain} · lat ${c.lat.toFixed(5)}, lon ${c.lon.toFixed(5)}${
+          c.scenarioTitle ? ` · 🎬 ${escapeHtml(c.scenarioTitle)}` : ""
+        }</div>
         ${c.desc ? `<div class="cache-desc">${escapeHtml(c.desc)}</div>` : ""}
         ${c.hint ? `<div class="cache-hint">💡 ${escapeHtml(c.hint)}</div>` : ""}
         <div class="cache-actions">
@@ -281,6 +444,7 @@
           if (state.targetId === id) state.targetId = null;
           renderCacheList();
           renderRadar();
+          renderScenarioList();
         }
         break;
     }
@@ -369,6 +533,7 @@
         CacheStore.saveAll(merged);
         state.caches = merged;
         renderCacheList();
+        renderScenarioList();
         alert(`${imported.length} cache(s) importée(s).`);
       } catch (e) {
         alert("Impossible de lire ce fichier : " + e.message);
@@ -386,6 +551,7 @@
       state.targetId = null;
       renderCacheList();
       renderRadar();
+      renderScenarioList();
     }
   });
 
@@ -399,4 +565,5 @@
   // ---------- Init ----------
   renderCacheList();
   renderRadar();
+  renderScenarioList();
 })();

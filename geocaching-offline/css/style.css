@@ -250,4 +250,99 @@ button {
 .about-list { font-size: .8rem; color: var(--muted); padding-left: 1.2rem; }
 .about-list li { margin-bottom: .5rem; }
 
+/* Scenarios */
+.scenario-intro { margin-bottom: 1rem; }
+
+.scenario-filters {
+  display: flex;
+  gap: .6rem;
+  margin-bottom: 1rem;
+}
+
+.scenario-filters select { flex: 1; }
+
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.scenario-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.scenario-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.scenario-emoji { font-size: 1.4rem; }
+
+.scenario-card-head h3 {
+  margin: 0;
+  color: var(--accent);
+  font-size: 1rem;
+  flex: 1;
+}
+
+.badge {
+  font-size: .7rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.badge-audience-enfants { color: #ffd166; border-color: #ffd166; }
+.badge-audience-adultes { color: #4cc9f0; border-color: #4cc9f0; }
+.badge-difficulty-Facile { color: var(--accent); border-color: var(--accent); }
+.badge-difficulty-Moyen { color: #ffb84d; border-color: #ffb84d; }
+.badge-difficulty-Difficile { color: var(--danger); border-color: var(--danger); }
+
+.scenario-meta {
+  font-size: .75rem;
+  color: var(--muted);
+  margin: .4rem 0;
+}
+
+.scenario-intro-text {
+  font-size: .85rem;
+  margin: .5rem 0;
+}
+
+.scenario-actions {
+  display: flex;
+  gap: .5rem;
+  margin-top: .6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.scenario-launched-tag {
+  font-size: .75rem;
+  color: var(--accent);
+}
+
+.origin-picker {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.origin-picker h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
 .hidden { display: none !important; }
