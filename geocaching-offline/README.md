@@ -18,23 +18,6 @@ pas de 4G/5G, pas de data, pas de Wi-Fi requis une fois installée.
   réseau), tous les fichiers de l'app sont mis en cache. Elle continue de fonctionner
   ensuite même sans connexion du tout.
 
-## Utilisation
-
-1. Ouvre `index.html` (idéalement servi en HTTPS ou via `localhost`, requis par les
-   navigateurs pour la géolocalisation et les service workers).
-2. Installe l'app sur l'écran d'accueil ("Ajouter à l'écran d'accueil") pour l'ouvrir
-   comme une vraie app, sans passer par le navigateur.
-3. Avant de partir hors-couverture, ajoute tes caches dans l'onglet **Ajouter**
-   (à la main ou via ta position GPS actuelle), ou importe un fichier `.json`
-   préparé à l'avance dans l'onglet **Données**. Tu peux aussi lancer un
-   **scénario préenregistré** (voir ci-dessous).
-4. Une fois sur le terrain, va dans **Caches**, choisis une cache et appuie sur
-   **📡 Pointer** : l'onglet **Radar** affiche alors la distance et la direction
-   à suivre.
-5. Marque les caches trouvées, et exporte régulièrement tes données en JSON pour
-   les sauvegarder ou les partager avec un autre appareil (par câble, Bluetooth,
-   carte SD... aucun réseau requis).
-
 ## Scénarios préenregistrés (multi-appareils, sans réseau)
 
 L'onglet **🎬 Scénarios** propose 6 parcours prêts à l'emploi, filtrables par
@@ -68,6 +51,142 @@ le relancer depuis un autre point de départ, et de nouveaux scénarios
 peuvent être ajoutés simplement en complétant le tableau `SCENARIOS` dans
 `js/scenarios.js`.
 
+## Installation sur un téléphone
+
+**Point important** : comme toute application web, elle doit être ouverte
+**une première fois avec une connexion** (Wi-Fi ou données mobiles) pour être
+téléchargée et installée. Ensuite seulement, elle fonctionne sans aucun
+réseau. Il n'y a pas de compte à créer, pas d'app store : tout se passe dans
+le navigateur.
+
+Trois façons d'obtenir un lien à ouvrir sur le téléphone :
+
+- **Hébergée en ligne** (le plus simple à partager à un groupe) : si le
+  dépôt est publié via GitHub Pages, ouvre simplement l'URL fournie
+  (ex. `https://<utilisateur>.github.io/CyberJess-Lab/geocaching-offline/`).
+- **Serveur local sur ton ordinateur** : lance le serveur local (voir
+  [Développement local](#développement-local)), puis sur le téléphone
+  (connecté au **même Wi-Fi** que l'ordinateur), ouvre
+  `http://<adresse-IP-locale-de-l-ordinateur>:8080` — trouve cette adresse
+  IP avec `ipconfig` (Windows) ou `ifconfig`/`ip a` (Mac/Linux).
+- **Fichiers copiés directement sur le téléphone** : possible avec certaines
+  apps (ex. un navigateur qui sait ouvrir des fichiers locaux), mais la
+  géolocalisation et le mode hors-ligne ne fonctionnent de façon fiable que
+  servis en `http://` ou `https://` — à éviter si possible.
+
+### Sur Android (Chrome)
+
+1. Ouvre le lien de l'app dans **Chrome**.
+2. Appuie sur le menu **⋮** (trois points, en haut à droite).
+3. Choisis **"Installer l'application"** ou **"Ajouter à l'écran d'accueil"**.
+4. Confirme. Une icône GeoCache apparaît sur l'écran d'accueil du téléphone.
+5. Ouvre l'app depuis cette icône (pas depuis Chrome) : elle s'affiche en
+   plein écran, comme une vraie application.
+6. À la première ouverture, autorise l'accès à la **position** quand le
+   téléphone le demande — c'est indispensable pour le radar.
+
+### Sur iPhone / iPad (Safari)
+
+1. Ouvre le lien **dans Safari** (l'ajout à l'écran d'accueil ne fonctionne
+   qu'avec Safari, pas avec Chrome ou un autre navigateur sur iOS).
+2. Appuie sur le bouton **Partager** (le carré avec une flèche vers le haut).
+3. Choisis **"Sur l'écran d'accueil"**.
+4. Confirme le nom, puis appuie sur **"Ajouter"** en haut à droite.
+5. Ouvre l'app depuis l'icône ajoutée à l'écran d'accueil.
+6. Autorise l'accès à la position quand demandé.
+7. Dans l'onglet **📡 Radar**, un bouton **"Activer la boussole"** peut
+   apparaître : appuie dessus et autorise l'accès aux capteurs de
+   mouvement — c'est une permission spécifique à iOS, sans quoi la flèche
+   ne s'oriente pas.
+
+### Préparer l'app avant de partir hors-couverture
+
+Avant de quitter le réseau (Wi-Fi ou données), fais ceci **une seule fois**,
+connecté :
+
+1. Ouvre l'app installée et navigue dans chaque onglet une fois
+   (Radar, Scénarios, Caches, Ajouter, Données) pour que le service worker
+   mette bien tous les fichiers en cache.
+2. Vérifie que le voyant en haut de l'écran passe au vert avec
+   **"Position acquise"** — ça confirme que le GPS fonctionne.
+3. Si tu utilises un scénario préenregistré ou des caches personnalisées,
+   prépare-les maintenant (voir ci-dessous) : ensuite, tu peux passer en
+   mode avion (GPS activé) ou partir en zone blanche sans problème.
+
+## Utilisation pas à pas
+
+### Lancer un scénario préenregistré (jeu à un ou plusieurs joueurs)
+
+1. Ouvre l'onglet **🎬 Scénarios**.
+2. Filtre par public (Enfants / Adultes) et par difficulté si besoin.
+3. Choisis un scénario, lis son introduction, puis appuie sur
+   **"🚀 Lancer ici"**.
+4. Place-toi (et place les autres joueurs, s'il y en a) au **point de départ
+   physique** choisi pour le jeu — un endroit facile à retrouver (une
+   entrée de parc, un arbre précis, etc.).
+5. Appuie sur **"📍 Utiliser ma position GPS actuelle"**, puis sur
+   **"Confirmer le départ"**.
+6. L'app bascule automatiquement sur l'onglet **Radar** et affiche la
+   première étape : suis la flèche verte et la distance indiquée.
+7. Une fois arrivé sur une étape, va dans **Caches**, lis l'indice, puis
+   appuie sur **"✅ Marquer trouvée"**. Reviens dans **Scénarios** et
+   appuie sur **"📡 Voir sur le radar"** pour être redirigé vers la
+   prochaine étape non trouvée.
+8. **Pour jouer à plusieurs appareils sans réseau** : chaque joueur répète
+   les étapes 1 à 5 en démarrant **exactement au même endroit physique**
+   (voir l'explication du mécanisme plus haut).
+9. À la fin (ou pour recommencer ailleurs), appuie sur
+   **"↺ Réinitialiser"** sur la carte du scénario pour supprimer ses
+   caches et pouvoir le relancer depuis un autre point de départ.
+
+### Créer ses propres caches
+
+1. Ouvre l'onglet **➕ Ajouter**.
+2. Remplis le nom, une description, un indice (optionnel), la difficulté
+   et le terrain.
+3. Pour les coordonnées : soit tape-les directement, soit rends-toi à
+   l'endroit voulu et appuie sur **"📍 Utiliser ma position GPS actuelle"**.
+4. Appuie sur **"Enregistrer la cache"** — elle apparaît dans l'onglet
+   **Caches**.
+
+### Gérer ses caches
+
+Dans l'onglet **🗂️ Caches**, chaque cache est listée avec sa distance par
+rapport à ta position actuelle (les plus proches en premier) :
+
+- **📡 Pointer** : l'affiche comme cible dans l'onglet Radar.
+- **✅ Marquer trouvée / ↩️ Marquer non trouvée** : suit ta progression.
+- **✏️ Modifier** : réouvre le formulaire pré-rempli.
+- **🗑️ Supprimer** : la retire définitivement.
+
+### Sauvegarder ou partager sans réseau
+
+Dans l'onglet **💾 Données** :
+
+- **⬇️ Exporter** : télécharge toutes les caches dans un fichier `.json`,
+  à garder comme sauvegarde ou à transférer à un autre appareil (câble,
+  Bluetooth, carte SD, clé USB — aucun réseau nécessaire).
+- **⬆️ Importer** : recharge un fichier `.json` précédemment exporté.
+- **🗑️ Tout effacer** : supprime toutes les caches enregistrées sur
+  l'appareil.
+
+## Dépannage
+
+- **"GPS indisponible"** : vérifie que la localisation est activée dans les
+  réglages du téléphone et que la permission a bien été accordée au
+  navigateur/à l'app installée.
+- **La flèche du radar ne s'oriente pas correctement** : sur iPhone, va dans
+  l'onglet Radar et appuie sur "Activer la boussole" si le bouton est
+  visible ; éloigne-toi des objets métalliques ou d'une voiture. Sans
+  capteur d'orientation disponible, le radar affiche le cap par rapport au
+  nord géographique — utilisable quand même avec une vraie boussole ou en
+  se repérant au soleil.
+- **Impossible d'ajouter l'app à l'écran d'accueil sur iPhone** : elle doit
+  être ouverte avec Safari, pas un autre navigateur.
+- **L'app semble "figée" après une mise à jour du contenu** : rouvre-la une
+  fois connectée au réseau pour que le service worker récupère la nouvelle
+  version.
+
 ## Développement local
 
 Comme la géolocalisation et les service workers exigent un contexte sécurisé,
@@ -97,8 +216,5 @@ geocaching-offline/
 
 ## Limites connues
 
-- La boussole (orientation de l'appareil) demande une permission utilisateur sur
-  iOS/Safari — un bouton "Activer la boussole" apparaît si nécessaire. Sans
-  capteur d'orientation, le radar affiche le cap par rapport au nord géographique.
 - La précision GPS dépend du matériel et de l'environnement (couverture arborée,
   canyons urbains, etc.), comme pour toute app de géocaching classique.
