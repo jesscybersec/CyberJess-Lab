@@ -18,6 +18,25 @@ pas de 4G/5G, pas de data, pas de Wi-Fi requis une fois installée.
   réseau), tous les fichiers de l'app sont mis en cache. Elle continue de fonctionner
   ensuite même sans connexion du tout.
 
+## Un design qui s'adapte à l'aventure
+
+L'app a une identité visuelle "explorateur/boussole" par défaut (fond sombre,
+accents laiton, boussole façon instrument de précision), mais **chaque
+scénario a sa propre ambiance** : couleurs et texture de fond changent selon
+l'aventure. Dès l'onglet **Scénarios**, chaque carte affiche déjà sa propre
+couleur et son propre motif (paillettes pour le jardin enchanté, vagues pour
+les pirates, feuillage pour la forêt, papier vieilli pour la balade
+vintage, lignes caviardées pour l'espionnage, circuits imprimés pour le
+Protocole Fantôme). Dès qu'une cache de ce scénario est ciblée sur le
+**Radar**, la couleur d'accent, le fond animé et la flèche du radar adoptent
+cette ambiance pour toute l'app.
+
+Un trajet créé en mode **Maître du jeu** peut lui aussi choisir une ambiance
+visuelle parmi ces mêmes thèmes (champ "Ambiance visuelle" à la création).
+
+Petit bonus : marquer une cache comme trouvée déclenche une courte
+animation de célébration à l'écran.
+
 ## Scénarios préenregistrés (multi-appareils, sans réseau)
 
 L'onglet **🎬 Scénarios** propose 6 parcours prêts à l'emploi, filtrables par

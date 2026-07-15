@@ -7,6 +7,7 @@
 const SCENARIOS = [
   {
     id: "kids-easy-garden",
+    theme: "fairy",
     title: "Le Trésor du Jardin Enchanté",
     emoji: "🧚",
     audience: "enfants",
@@ -54,6 +55,7 @@ const SCENARIOS = [
   },
   {
     id: "kids-medium-pirates",
+    theme: "pirates",
     title: "Mission Pirates au Parc",
     emoji: "🏴‍☠️",
     audience: "enfants",
@@ -109,6 +111,7 @@ const SCENARIOS = [
   },
   {
     id: "kids-hard-forest",
+    theme: "forest",
     title: "L'Énigme de la Forêt Mystérieuse",
     emoji: "🌲",
     audience: "enfants",
@@ -164,6 +167,7 @@ const SCENARIOS = [
   },
   {
     id: "adults-easy-heritage",
+    theme: "heritage",
     title: "Balade Rétro du Vieux Quartier",
     emoji: "🏛️",
     audience: "adultes",
@@ -211,6 +215,7 @@ const SCENARIOS = [
   },
   {
     id: "adults-medium-spy",
+    theme: "spy",
     title: "Chasse à l'Espion",
     emoji: "🕵️",
     audience: "adultes",
@@ -266,6 +271,7 @@ const SCENARIOS = [
   },
   {
     id: "adults-hard-ghost-protocol",
+    theme: "ghost",
     title: "Protocole Fantôme — Signal Zéro",
     emoji: "📡",
     audience: "adultes",

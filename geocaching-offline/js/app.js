@@ -14,6 +14,40 @@
     scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null },
   };
 
+  // ---------- Theming ----------
+  const bgPatternEl = document.getElementById("bgPattern");
+  let currentThemeId = null;
+
+  function themeIdForScenarioId(scenarioId) {
+    if (!scenarioId) return null;
+    const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+    if (scenario) return scenario.theme;
+    const trail = state.trails.find((t) => t.id === scenarioId);
+    return trail ? trail.theme : null;
+  }
+
+  function applyTheme(themeId) {
+    const resolved = themeId || "explorer";
+    if (resolved === currentThemeId) return;
+    currentThemeId = resolved;
+    const theme = getTheme(resolved);
+    const root = document.documentElement.style;
+    root.setProperty("--accent", theme.accent);
+    root.setProperty("--accent-dim", theme.accentDim);
+    root.setProperty("--bg", theme.bg);
+    root.setProperty("--bg-panel", theme.bgPanel);
+    bgPatternEl.className = `app-bg-pattern pattern-${theme.pattern}`;
+  }
+
+  function celebrateFound() {
+    const theme = getTheme(currentThemeId);
+    const burst = document.createElement("div");
+    burst.className = "found-burst";
+    burst.innerHTML = `<span>${theme.emoji}</span><span>✨</span><span>🎉</span><span>✨</span>`;
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 1000);
+  }
+
   // ---------- Tabs ----------
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -102,6 +136,7 @@
   const canvas = document.getElementById("compassCanvas");
   const ctx = canvas.getContext("2d");
   const radarInfoEl = document.getElementById("radarInfo");
+  const compassBezelEl = document.getElementById("compassBezel");
 
   function drawCompassFace() {
     const cx = canvas.width / 2;
@@ -148,13 +183,14 @@
     const cy = canvas.height / 2;
     const rad = (angleDeg * Math.PI) / 180;
     const len = canvas.width / 2 - 40;
+    const accentColor = getTheme(currentThemeId).accent;
 
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(rad);
 
-    ctx.fillStyle = "#39ff14";
-    ctx.shadowColor = "#39ff14";
+    ctx.fillStyle = accentColor;
+    ctx.shadowColor = accentColor;
     ctx.shadowBlur = 12;
     ctx.beginPath();
     ctx.moveTo(0, -len);
@@ -175,6 +211,9 @@
   function renderRadar() {
     drawCompassFace();
     const target = getTarget();
+
+    applyTheme(target ? themeIdForScenarioId(target.scenarioId) : null);
+    compassBezelEl.classList.toggle("has-target", !!target && !target.found);
 
     if (!target || !state.position) {
       radarInfoEl.innerHTML = target
@@ -329,6 +368,7 @@
     renderRadar();
     renderScenarioList();
     renderTrailList();
+    celebrateFound();
   });
 
   // ---------- Scenarios ----------
@@ -371,8 +411,9 @@
     scenarioListEl.innerHTML = filtered
       .map((s) => {
         const launched = isScenarioLaunched(s.id);
+        const theme = getTheme(s.theme);
         return `
-      <div class="scenario-card" data-scenario-id="${s.id}">
+      <div class="scenario-card pattern-${theme.pattern}" data-scenario-id="${s.id}" style="--card-accent:${theme.accent}">
         <div class="scenario-card-head">
           <span class="scenario-emoji">${s.emoji}</span>
           <h3>${escapeHtml(s.title)}</h3>
@@ -534,10 +575,12 @@
   gmNewTrailForm.addEventListener("submit", (evt) => {
     evt.preventDefault();
     const difficultyLabel = document.getElementById("gmDifficulty").value;
+    const themeId = document.getElementById("gmTheme").value;
     state.recording = {
       id: CustomTrailStore.newId(),
       title: document.getElementById("gmName").value.trim(),
-      emoji: "🎓",
+      emoji: getTheme(themeId).emoji,
+      theme: themeId,
       audience: document.getElementById("gmAudience").value,
       difficultyLabel,
       difficultyStars: DIFFICULTY_STARS[difficultyLabel] || 3,
@@ -637,8 +680,9 @@
     trailListEl.innerHTML = state.trails
       .map((t) => {
         const launched = isScenarioLaunched(t.id);
+        const theme = getTheme(t.theme);
         return `
-      <div class="scenario-card" data-trail-id="${t.id}">
+      <div class="scenario-card pattern-${theme.pattern}" data-trail-id="${t.id}" style="--card-accent:${theme.accent}">
         <div class="scenario-card-head">
           <span class="scenario-emoji">${t.emoji}</span>
           <h3>${escapeHtml(t.title)}</h3>
@@ -800,6 +844,8 @@
         cache.found = !cache.found;
         state.caches = CacheStore.upsert(cache);
         renderCacheList();
+        renderRadar();
+        if (cache.found) celebrateFound();
         break;
       case "edit":
         loadCacheIntoForm(cache);
@@ -827,6 +873,11 @@
 
   populateArSelect(document.getElementById("fArObject"));
   populateArSelect(document.getElementById("gmCpAr"));
+
+  const gmThemeSelect = document.getElementById("gmTheme");
+  gmThemeSelect.innerHTML = Object.keys(THEMES)
+    .map((id) => `<option value="${id}">${THEMES[id].label}</option>`)
+    .join("");
 
   // ---------- Add / edit form ----------
   const form = document.getElementById("cacheForm");
