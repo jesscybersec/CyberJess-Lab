@@ -1,0 +1,19 @@
+{
+  "name": "CyberJess Geocaching",
+  "short_name": "CyberJess",
+  "description": "Application de géocaching 100% hors-ligne, sans réseau cellulaire ni carte en ligne.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#10181a",
+  "theme_color": "#10181a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

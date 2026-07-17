@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CyberJess Geocaching</title>
+<meta name="theme-color" content="#10181a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="bgPattern" class="app-bg-pattern pattern-contours"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="4"/>
+      <circle cx="50" cy="50" r="3" fill="currentColor"/>
+      <path d="M50 12 L60 46 L50 40 L40 46 Z" fill="currentColor"/>
+      <path d="M50 88 L60 54 L50 60 L40 54 Z" fill="currentColor" opacity=".5"/>
+    </svg>
+    <h1>CyberJess Geocaching</h1>
+  </div>
+  <div id="gpsStatus" class="gps-status gps-none">
+    <span class="dot"></span> <span id="gpsLabel">Recherche GPS…</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="radar">📡 Radar</button>
+  <button class="tab-btn" data-tab="scenarios">🎬 Scénarios</button>
+  <button class="tab-btn" data-tab="gm">🎓 Maître du jeu</button>
+  <button class="tab-btn" data-tab="list">🗂️ Caches</button>
+  <button class="tab-btn" data-tab="add">➕ Ajouter</button>
+  <button class="tab-btn" data-tab="data">💾 Données</button>
+</nav>
+
+<main>
+
+  <!-- RADAR TAB -->
+  <section id="tab-radar" class="tab-panel active">
+    <div class="compass-wrap">
+      <div id="compassBezel" class="compass-bezel">
+        <canvas id="compassCanvas" width="300" height="300"></canvas>
+      </div>
+      <button id="enableOrientationBtn" class="btn-secondary hidden">Activer la boussole</button>
+    </div>
+    <div id="radarInfo" class="radar-info">
+      <p class="muted">Sélectionne une cache dans l'onglet "Caches" pour la pointer ici.</p>
+    </div>
+    <div class="coords-readout" id="coordsReadout">
+      lat: -- , lon: -- (précision: --)
+    </div>
+  </section>
+
+  <!-- SCENARIOS TAB -->
+  <section id="tab-scenarios" class="tab-panel">
+    <p class="muted scenario-intro">
+      Ces parcours sont préenregistrés dans l'application (aucun réseau requis).
+      Ils sont définis par cap + distance depuis un point de départ que tu choisis
+      sur place : plusieurs appareils qui démarrent au même endroit obtiennent
+      exactement les mêmes caches, sans rien s'échanger entre eux.
+    </p>
+
+    <div class="scenario-filters">
+      <select id="filterAudience">
+        <option value="">Tous les publics</option>
+        <option value="enfants">👧 Enfants</option>
+        <option value="adultes">🧑 Adultes</option>
+      </select>
+      <select id="filterDifficulty">
+        <option value="">Toutes difficultés</option>
+        <option value="Facile">Facile</option>
+        <option value="Moyen">Moyen</option>
+        <option value="Difficile">Difficile</option>
+      </select>
+    </div>
+
+    <div id="scenarioList" class="scenario-list"></div>
+
+    <!-- Origin picker, shown when launching a scenario -->
+    <div id="originPicker" class="origin-picker hidden">
+      <h2 id="originScenarioTitle">Lancer le scénario</h2>
+      <p class="muted">
+        Place-toi au point de départ physique du parcours, puis confirme.
+        Chaque appareil doit démarrer depuis ce même point.
+      </p>
+      <div class="row">
+        <label>Latitude de départ
+          <input type="number" step="any" id="originLat">
+        </label>
+        <label>Longitude de départ
+          <input type="number" step="any" id="originLon">
+        </label>
+      </div>
+      <button type="button" id="useCurrentPosOrigin" class="btn-secondary">📍 Utiliser ma position GPS actuelle</button>
+      <div class="form-actions">
+        <button type="button" id="confirmLaunch" class="btn-primary">Confirmer le départ</button>
+        <button type="button" id="cancelLaunch" class="btn-secondary">Annuler</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME MASTER TAB -->
+  <section id="tab-gm" class="tab-panel">
+    <p class="muted scenario-intro">
+      Le mode maître du jeu te permet de créer ton propre trajet en le parcourant
+      réellement : à chaque checkpoint, appuie sur "Ajouter ce checkpoint ici"
+      pour enregistrer sa position GPS exacte. Le trajet obtenu peut être lancé
+      directement, ou exporté en fichier pour être partagé (câble, Bluetooth,
+      carte SD...) et rejoué à l'identique sur d'autres appareils, sans réseau.
+    </p>
+
+    <!-- New trail form (hidden while recording) -->
+    <form id="gmNewTrailForm" class="cache-form">
+      <h2>Nouveau trajet</h2>
+      <label>Nom du trajet
+        <input type="text" id="gmName" required placeholder="La Chasse du Manoir">
+      </label>
+      <label>Introduction / mise en contexte
+        <textarea id="gmIntro" rows="3" placeholder="Le contexte de l'aventure pour les joueurs..."></textarea>
+      </label>
+      <div class="row">
+        <label>Public
+          <select id="gmAudience">
+            <option value="enfants">👧 Enfants</option>
+            <option value="adultes" selected>🧑 Adultes</option>
+          </select>
+        </label>
+        <label>Difficulté
+          <select id="gmDifficulty">
+            <option value="Facile">Facile</option>
+            <option value="Moyen" selected>Moyen</option>
+            <option value="Difficile">Difficile</option>
+          </select>
+        </label>
+      </div>
+      <label>Lieu / terrain
+        <input type="text" id="gmSetting" placeholder="Parc du Manoir">
+      </label>
+      <label>Ambiance visuelle
+        <select id="gmTheme"></select>
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">▶️ Démarrer l'enregistrement</button>
+      </div>
+    </form>
+
+    <!-- Recording view -->
+    <div id="gmRecordingView" class="gm-recording hidden">
+      <h2 id="gmRecordingTitle">Enregistrement en cours</h2>
+      <p class="muted">Déplace-toi jusqu'au prochain checkpoint, puis enregistre sa position.</p>
+
+      <div id="gmCheckpointList" class="gm-checkpoint-list"></div>
+
+      <form id="gmCheckpointForm" class="cache-form">
+        <label>Nom du checkpoint
+          <input type="text" id="gmCpName" required placeholder="La porte grinçante">
+        </label>
+        <label>Description
+          <textarea id="gmCpDesc" rows="2" placeholder="Contexte de ce checkpoint..."></textarea>
+        </label>
+        <label>Indice
+          <input type="text" id="gmCpHint" placeholder="Regarde derrière la statue">
+        </label>
+        <label>Objet virtuel à scanner (optionnel)
+          <select id="gmCpAr"></select>
+        </label>
+        <button type="submit" class="btn-primary">📍 Ajouter ce checkpoint ici</button>
+      </form>
+
+      <div class="form-actions">
+        <button type="button" id="gmFinishBtn" class="btn-primary">✅ Terminer le trajet</button>
+        <button type="button" id="gmCancelBtn" class="btn-danger">✖️ Annuler l'enregistrement</button>
+      </div>
+    </div>
+
+    <h2 class="gm-trails-heading">📓 Mes trajets</h2>
+    <div class="data-actions">
+      <label class="btn-secondary file-label">
+        ⬆️ Importer un trajet
+        <input type="file" id="importTrailInput" accept="application/json" class="hidden">
+      </label>
+    </div>
+    <div id="trailList" class="scenario-list"></div>
+  </section>
+
+  <!-- LIST TAB -->
+  <section id="tab-list" class="tab-panel">
+    <div id="cacheList" class="cache-list">
+      <p class="muted">Aucune cache enregistrée. Ajoute-en une dans l'onglet "Ajouter".</p>
+    </div>
+  </section>
+
+  <!-- ADD TAB -->
+  <section id="tab-add" class="tab-panel">
+    <form id="cacheForm" class="cache-form">
+      <input type="hidden" id="cacheId">
+      <label>Nom
+        <input type="text" id="fName" required placeholder="Cache du vieux pont">
+      </label>
+      <label>Description
+        <textarea id="fDesc" rows="3" placeholder="Indices, contexte, contenu de la boîte..."></textarea>
+      </label>
+      <label>Indice (optionnel)
+        <input type="text" id="fHint" placeholder="Sous la pierre plate près du chêne">
+      </label>
+      <label>Objet virtuel à scanner (optionnel)
+        <select id="fArObject"></select>
+      </label>
+      <div class="row">
+        <label>Difficulté
+          <select id="fDifficulty">
+            <option value="1">1 - Facile</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5 - Difficile</option>
+          </select>
+        </label>
+        <label>Terrain
+          <select id="fTerrain">
+            <option value="1">1 - Facile</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5 - Difficile</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>Latitude
+          <input type="number" step="any" id="fLat" required placeholder="48.8566">
+        </label>
+        <label>Longitude
+          <input type="number" step="any" id="fLon" required placeholder="2.3522">
+        </label>
+      </div>
+      <button type="button" id="useCurrentPos" class="btn-secondary">📍 Utiliser ma position GPS actuelle</button>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Enregistrer la cache</button>
+        <button type="button" id="cancelEdit" class="btn-secondary hidden">Annuler</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- DATA TAB -->
+  <section id="tab-data" class="tab-panel">
+    <div class="data-box">
+      <h2>Sauvegarde locale</h2>
+      <p class="muted">
+        Toutes les caches sont stockées uniquement sur cet appareil (localStorage).
+        Aucune donnée n'est envoyée sur un serveur. Exporte un fichier JSON pour
+        partager tes caches avec un autre appareil ou faire une sauvegarde,
+        même sans connexion.
+      </p>
+      <div class="data-actions">
+        <button id="exportBtn" class="btn-secondary">⬇️ Exporter (JSON)</button>
+        <label class="btn-secondary file-label">
+          ⬆️ Importer (JSON)
+          <input type="file" id="importInput" accept="application/json" class="hidden">
+        </label>
+        <button id="clearBtn" class="btn-danger">🗑️ Tout effacer</button>
+      </div>
+    </div>
+    <div class="data-box">
+      <h2>À propos du mode hors-ligne</h2>
+      <ul class="about-list">
+        <li>La position GPS provient des satellites, pas du réseau cellulaire — elle fonctionne même en mode avion (si le GPS reste activé) ou en zone blanche.</li>
+        <li>Cette application ne charge aucune carte ni tuile en ligne : elle utilise un radar (distance + cap) calculé directement sur l'appareil.</li>
+        <li>Installe cette page comme application (icône "Ajouter à l'écran d'accueil") pour qu'elle fonctionne même sans jamais rouvrir de navigateur en ligne.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<!-- AR scanner overlay -->
+<div id="arScanner" class="ar-scanner hidden">
+  <video id="arVideo" class="ar-video" autoplay playsinline muted></video>
+  <canvas id="arCanvas" class="ar-canvas"></canvas>
+  <div class="ar-ui">
+    <div id="arObjectLabel" class="ar-object-label"></div>
+    <div id="arError" class="ar-error hidden"></div>
+    <div class="ar-actions">
+      <button id="arFoundBtn" class="btn-primary">✅ J'ai trouvé l'objet !</button>
+      <button id="arCloseBtn" class="btn-secondary">✖️ Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/geo.js"></script>
+<script src="js/db.js"></script>
+<script src="js/scenarios.js"></script>
+<script src="js/ar-objects.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

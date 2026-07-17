@@ -107,6 +107,7 @@ My cybersecurity environment is built around a constantly evolving ecosystem of 
 Specialized modules:
 
 - 🧰 Local Tools → [Tools](./Tools/)
+- 📡 CyberJess Geocaching (offline app) → [cyberjess-geocaching](./cyberjess-geocaching/)
 - 📚 PDF Merger → [jesscybersec/PDFMerger](https://github.com/jesscybersec/PDFMerger)
 - 🧠 OSINT AI Agent → [OSINT-AI-Agent](https://github.com/jesscybersec/OSINT-AI-Agent)
 - 🛡️ KQL Detections → (coming soon)
