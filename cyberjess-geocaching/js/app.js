@@ -753,17 +753,64 @@
     }
   });
 
+  const ALLOWED_AUDIENCES = ["enfants", "adultes"];
+  const ALLOWED_DIFFICULTY_LABELS = ["Facile", "Moyen", "Difficile"];
+
+  // A trail file may come from someone else's device (shared by cable,
+  // Bluetooth, AirDrop...), so its fields are untrusted input: every value
+  // is type-checked and coerced to a known-safe shape before it can ever
+  // reach innerHTML — ids are always regenerated locally, and free-form
+  // enum-like fields (audience, difficulty) are restricted to an allow-list
+  // rather than trusted as-is.
+  function sanitizeImportedTrail(raw) {
+    if (!raw || typeof raw !== "object" || !Array.isArray(raw.waypoints)) return null;
+    if (typeof raw.title !== "string" || !raw.title.trim()) return null;
+
+    const waypoints = raw.waypoints
+      .map((wp) => {
+        if (!wp || typeof wp !== "object") return null;
+        const lat = Number(wp.lat);
+        const lon = Number(wp.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        return {
+          name: typeof wp.name === "string" && wp.name.trim() ? wp.name.slice(0, 200) : "Checkpoint",
+          desc: typeof wp.desc === "string" ? wp.desc.slice(0, 2000) : "",
+          hint: typeof wp.hint === "string" ? wp.hint.slice(0, 500) : "",
+          ar: typeof wp.ar === "string" && getArObject(wp.ar) ? wp.ar : null,
+          lat,
+          lon,
+        };
+      })
+      .filter(Boolean);
+    if (waypoints.length === 0) return null;
+
+    const difficultyLabel = ALLOWED_DIFFICULTY_LABELS.includes(raw.difficultyLabel) ? raw.difficultyLabel : "Moyen";
+    const audience = ALLOWED_AUDIENCES.includes(raw.audience) ? raw.audience : "adultes";
+    const themeId = typeof raw.theme === "string" && THEMES[raw.theme] ? raw.theme : "explorer";
+
+    return {
+      id: CustomTrailStore.newId(), // never trust an id from an imported file
+      title: raw.title.trim().slice(0, 200),
+      emoji: getTheme(themeId).emoji,
+      theme: themeId,
+      audience,
+      difficultyLabel,
+      difficultyStars: DIFFICULTY_STARS[difficultyLabel] || 3,
+      minAge: typeof raw.minAge === "string" ? raw.minAge.slice(0, 100) : "Trajet personnalisé",
+      setting: typeof raw.setting === "string" ? raw.setting.slice(0, 200) : "Trajet personnalisé",
+      intro: typeof raw.intro === "string" ? raw.intro.slice(0, 2000) : "",
+      waypoints,
+    };
+  }
+
   document.getElementById("importTrailInput").addEventListener("change", (evt) => {
     const file = evt.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const trail = JSON.parse(reader.result);
-        if (!trail || !Array.isArray(trail.waypoints) || !trail.title) {
-          throw new Error("Format de trajet invalide");
-        }
-        if (trailById(trail.id)) trail.id = CustomTrailStore.newId();
+        const trail = sanitizeImportedTrail(JSON.parse(reader.result));
+        if (!trail) throw new Error("Format de trajet invalide");
         CustomTrailStore.upsert(trail);
         state.trails = CustomTrailStore.loadAll();
         renderTrailList();
@@ -947,6 +994,36 @@
     URL.revokeObjectURL(url);
   });
 
+  // Same trust boundary as sanitizeImportedTrail above: a caches file may
+  // come from another device, so every field is type-checked and coerced
+  // before it can reach innerHTML. Ids are always regenerated locally.
+  function sanitizeImportedCache(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const lat = Number(raw.lat);
+    const lon = Number(raw.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+    const clampDifficulty = (n) => (Number.isFinite(n) ? Math.min(5, Math.max(1, Math.round(n))) : 3);
+
+    const cache = {
+      id: CacheStore.newId(), // never trust an id from an imported file
+      name: typeof raw.name === "string" && raw.name.trim() ? raw.name.slice(0, 200) : "Cache importée",
+      desc: typeof raw.desc === "string" ? raw.desc.slice(0, 2000) : "",
+      hint: typeof raw.hint === "string" ? raw.hint.slice(0, 500) : "",
+      ar: typeof raw.ar === "string" && getArObject(raw.ar) ? raw.ar : null,
+      difficulty: clampDifficulty(Number(raw.difficulty)),
+      terrain: clampDifficulty(Number(raw.terrain)),
+      lat,
+      lon,
+      found: false,
+    };
+    if (typeof raw.scenarioId === "string" && raw.scenarioId) {
+      cache.scenarioId = raw.scenarioId.slice(0, 200);
+      cache.scenarioTitle = typeof raw.scenarioTitle === "string" ? raw.scenarioTitle.slice(0, 200) : "";
+      cache.scenarioIndex = Number.isFinite(Number(raw.scenarioIndex)) ? Number(raw.scenarioIndex) : 0;
+    }
+    return cache;
+  }
+
   document.getElementById("importInput").addEventListener("change", (evt) => {
     const file = evt.target.files[0];
     if (!file) return;
@@ -955,18 +1032,14 @@
       try {
         const imported = JSON.parse(reader.result);
         if (!Array.isArray(imported)) throw new Error("Format invalide");
-        const existingIds = new Set(state.caches.map((c) => c.id));
-        const merged = state.caches.concat(
-          imported
-            .filter((c) => c && c.lat !== undefined && c.lon !== undefined)
-            .map((c) => (existingIds.has(c.id) ? { ...c, id: CacheStore.newId() } : c))
-        );
+        const sanitized = imported.map(sanitizeImportedCache).filter(Boolean);
+        const merged = state.caches.concat(sanitized);
         CacheStore.saveAll(merged);
         state.caches = merged;
         renderCacheList();
         renderScenarioList();
         renderTrailList();
-        alert(`${imported.length} cache(s) importée(s).`);
+        alert(`${sanitized.length} cache(s) importée(s).`);
       } catch (e) {
         alert("Impossible de lire ce fichier : " + e.message);
       } finally {
