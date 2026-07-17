@@ -1,6 +1,6 @@
 {
-  "name": "GeoCache Offline",
-  "short_name": "GeoCache",
+  "name": "CyberJess Geocaching",
+  "short_name": "CyberJess",
   "description": "Application de géocaching 100% hors-ligne, sans réseau cellulaire ni carte en ligne.",
   "start_url": "./index.html",
   "scope": "./",

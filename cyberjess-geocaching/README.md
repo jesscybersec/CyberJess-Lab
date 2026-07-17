@@ -1,4 +1,4 @@
-# 📡 GeoCache // Offline
+# 📡 CyberJess Geocaching
 
 Une application de géocaching qui fonctionne **sans aucune onde cellulaire** :
 pas de 4G/5G, pas de data, pas de Wi-Fi requis une fois installée.
@@ -142,7 +142,7 @@ Trois façons d'obtenir un lien à ouvrir sur le téléphone :
 
 - **Hébergée en ligne** (le plus simple à partager à un groupe) : si le
   dépôt est publié via GitHub Pages, ouvre simplement l'URL fournie
-  (ex. `https://<utilisateur>.github.io/CyberJess-Lab/geocaching-offline/`).
+  (ex. `https://<utilisateur>.github.io/CyberJess-Lab/cyberjess-geocaching/`).
 - **Serveur local sur ton ordinateur** : lance le serveur local (voir
   [Développement local](#développement-local)), puis sur le téléphone
   (connecté au **même Wi-Fi** que l'ordinateur), ouvre
@@ -283,7 +283,7 @@ Comme la géolocalisation et les service workers exigent un contexte sécurisé,
 sers le dossier en local plutôt que d'ouvrir le fichier directement :
 
 ```bash
-cd geocaching-offline
+cd cyberjess-geocaching
 python3 -m http.server 8080
 # puis ouvrir http://localhost:8080
 ```
@@ -291,7 +291,7 @@ python3 -m http.server 8080
 ## Structure
 
 ```
-geocaching-offline/
+cyberjess-geocaching/
 ├── index.html            # UI (radar, liste des caches, formulaire, données)
 ├── manifest.json         # PWA installable
 ├── service-worker.js     # cache-first, fonctionne 100% hors-ligne
