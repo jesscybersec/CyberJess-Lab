@@ -22,14 +22,16 @@ pas de 4G/5G, pas de data, pas de Wi-Fi requis une fois installée.
 
 L'app a une identité visuelle "explorateur/boussole" par défaut (fond sombre,
 accents laiton, boussole façon instrument de précision), mais **chaque
-scénario a sa propre ambiance** : couleurs et texture de fond changent selon
-l'aventure. Dès l'onglet **Scénarios**, chaque carte affiche déjà sa propre
-couleur et son propre motif (paillettes pour le jardin enchanté, vagues pour
-les pirates, feuillage pour la forêt, papier vieilli pour la balade
-vintage, lignes caviardées pour l'espionnage, circuits imprimés pour le
-Protocole Fantôme). Dès qu'une cache de ce scénario est ciblée sur le
-**Radar**, la couleur d'accent, le fond animé et la flèche du radar adoptent
-cette ambiance pour toute l'app.
+scénario a sa propre ambiance**, parmi 13 thèmes disponibles : couleurs et
+texture de fond changent selon l'aventure. Dès l'onglet **Scénarios**,
+chaque carte affiche déjà sa propre couleur et son propre motif (paillettes
+pour le jardin enchanté ou l'observatoire, vagues pour les pirates,
+feuillage pour la forêt ou la jungle, papier vieilli pour la balade
+vintage ou le marché gourmand, lignes caviardées pour l'espionnage ou le
+musée disparu, circuits imprimés pour le Protocole Fantôme ou Zero Day...).
+Dès qu'une cache de ce scénario est ciblée sur le **Radar**, la couleur
+d'accent, le fond animé et la flèche du radar adoptent cette ambiance pour
+toute l'app.
 
 Un trajet créé en mode **Maître du jeu** peut lui aussi choisir une ambiance
 visuelle parmi ces mêmes thèmes (champ "Ambiance visuelle" à la création).
@@ -39,17 +41,23 @@ animation de célébration à l'écran.
 
 ## Scénarios préenregistrés (multi-appareils, sans réseau)
 
-L'onglet **🎬 Scénarios** propose 6 parcours prêts à l'emploi, filtrables par
-public et par difficulté :
+L'onglet **🎬 Scénarios** propose 12 parcours prêts à l'emploi (2 par
+combinaison public/difficulté), filtrables par public et par difficulté :
 
 | Scénario | Public | Difficulté | Étapes |
 |---|---|---|---|
 | Le Trésor du Jardin Enchanté | Enfants (5-8 ans) | Facile | 4 |
+| Le Cirque Magique | Enfants (5-8 ans) | Facile | 4 |
 | Mission Pirates au Parc | Enfants (8-11 ans) | Moyen | 5 |
+| L'Expédition des Explorateurs Perdus | Enfants (8-11 ans) | Moyen | 5 |
 | L'Énigme de la Forêt Mystérieuse | Enfants/ados (11-14 ans) | Difficile | 5 |
+| Le Code Secret de l'Observatoire | Enfants/ados (11-14 ans) | Difficile | 5 |
 | Balade Rétro du Vieux Quartier | Adultes | Facile | 4 |
+| Promenade Gourmande du Marché | Adultes | Facile | 4 |
 | Chasse à l'Espion | Adultes | Moyen | 5 |
+| L'Énigme du Musée Disparu | Adultes | Moyen | 5 |
 | Protocole Fantôme — Signal Zéro | Adultes | Difficile | 6 |
+| Zero Day | Adultes | Difficile | 6 |
 
 **Comment ça fonctionne sans aucun échange réseau entre les appareils :**
 chaque scénario est défini par une suite de **cap + distance** relatifs
@@ -170,9 +178,9 @@ le navigateur.
 
 Trois façons d'obtenir un lien à ouvrir sur le téléphone :
 
-- **Hébergée en ligne** (le plus simple à partager à un groupe) : si le
-  dépôt est publié via GitHub Pages, ouvre simplement l'URL fournie
-  (ex. `https://<utilisateur>.github.io/CyberJess-Lab/cyberjess-geocaching/`).
+- **Hébergée en ligne via GitHub Pages** (le plus simple, à faire une seule
+  fois) — voir la section [Héberger l'app avec GitHub Pages](#héberger-lapp-avec-github-pages)
+  ci-dessous.
 - **Serveur local sur ton ordinateur** : lance le serveur local (voir
   [Développement local](#développement-local)), puis sur le téléphone
   (connecté au **même Wi-Fi** que l'ordinateur), ouvre
@@ -182,6 +190,31 @@ Trois façons d'obtenir un lien à ouvrir sur le téléphone :
   apps (ex. un navigateur qui sait ouvrir des fichiers locaux), mais la
   géolocalisation et le mode hors-ligne ne fonctionnent de façon fiable que
   servis en `http://` ou `https://` — à éviter si possible.
+
+### Héberger l'app avec GitHub Pages
+
+C'est la façon la plus simple de donner un lien stable aux joueurs, sans
+qu'ils aient besoin d'un ordinateur ni d'être sur le même Wi-Fi que
+personne. GitHub Pages est gratuit et déjà activé sur ce dépôt.
+
+**Lien de l'app une fois publiée :**
+`https://jesscybersec.github.io/CyberJess-Lab/cyberjess-geocaching/`
+
+Pour l'activer (ou le réactiver) toi-même sur le dépôt :
+
+1. Va sur **https://github.com/jesscybersec/CyberJess-Lab** → onglet
+   **Settings** du dépôt (pas les paramètres de ton compte personnel).
+2. Dans le menu de gauche, section "Code and automation" → **Pages**.
+3. Sous **Build and deployment** → **Source** : choisis **"Deploy from a
+   branch"**.
+4. **Branch** : `main`, dossier **`/ (root)`** → **Save**.
+5. Attends 1-2 minutes que GitHub publie le site, puis ouvre le lien
+   ci-dessus.
+
+Comme la branche `main` contient tout le dépôt (pas seulement le dossier
+de l'app), le lien publié couvre l'ensemble du contenu du dépôt — c'est
+sans risque supplémentaire ici puisque le dépôt est déjà public, mais à
+garder en tête si le dépôt devient privé un jour.
 
 ### Sur Android (Chrome)
 
