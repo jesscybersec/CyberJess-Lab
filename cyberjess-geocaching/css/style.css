@@ -757,4 +757,14 @@ button:active { transform: scale(.97); }
   font-size: 1.4rem;
 }
 
+.sound-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9rem;
+  color: var(--text);
+}
+
+.sound-toggle input { width: auto; }
+
 .hidden { display: none !important; }

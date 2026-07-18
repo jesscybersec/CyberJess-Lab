@@ -168,6 +168,26 @@ plusieurs téléphones).
 Pour enrichir la banque de questions, complète les tableaux du fichier
 `js/quiz.js` (un tableau par combinaison public/difficulté).
 
+## Sons et vibrations
+
+Quatre petits signaux accompagnent le jeu, tous générés directement sur
+l'appareil (aucun fichier audio téléchargé) :
+
+- **Approche d'une cache** : un son + une vibration légère dès que tu entres
+  dans la zone de scan (moins de 30 m) d'une cache liée à un objet virtuel.
+- **Bonne réponse au quiz** : un son de victoire.
+- **Mauvaise réponse au quiz** : un son d'échec.
+- **Cache marquée trouvée** : un petit air de triomphe.
+
+Ils se désactivent tous ensemble via **"🔊 Activer les sons et
+vibrations"** dans l'onglet **💾 Données** (utile dans un lieu calme comme
+une bibliothèque). Ce réglage est mémorisé sur l'appareil.
+
+**Limite connue** : la vibration utilise l'API Vibration du navigateur,
+qui n'est **pas supportée par Safari sur iPhone/iPad** (limitation
+d'Apple, pas de contournement possible côté app) — les sons, eux,
+fonctionnent sur toutes les plateformes.
+
 ## Mode simulation (tester sans se déplacer)
 
 L'onglet **🧪 Simulation** permet de tester toute l'application — radar,
@@ -391,12 +411,13 @@ cyberjess-geocaching/
 ├── css/style.css
 ├── js/
 │   ├── geo.js            # distance/cap (haversine, bearing) + destinationPoint (cap+distance -> lat/lon)
-│   ├── db.js             # persistance localStorage (caches, trajets, score du quiz)
+│   ├── db.js             # persistance localStorage (caches, trajets, score du quiz, préférences)
 │   ├── scenarios.js      # scénarios préenregistrés (enfants/adultes x facile/moyen/difficile)
 │   ├── ar-objects.js     # bibliothèque d'objets virtuels pour le scan caméra
 │   ├── themes.js         # palettes visuelles par scénario/trajet
 │   ├── quiz.js           # banque de questions quiz (par public + difficulté)
-│   └── app.js            # logique de l'app (GPS, boussole, scénarios, mode MJ, scan AR, quiz, CRUD, import/export)
+│   ├── audio.js          # effets sonores synthétisés (Web Audio API, aucun fichier audio)
+│   └── app.js            # logique de l'app (GPS, boussole, scénarios, mode MJ, scan AR, quiz, simulation, sons, CRUD, import/export)
 └── icons/icon.svg
 ```
 

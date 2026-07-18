@@ -267,6 +267,23 @@
   <!-- DATA TAB -->
   <section id="tab-data" class="tab-panel">
     <div class="data-box">
+      <h2>Sons et vibrations</h2>
+      <p class="muted">
+        Un petit signal sonore et une vibration légère se déclenchent quand tu
+        entres dans la zone de scan d'une cache (moins de 30 m), un son de
+        victoire quand tu réponds juste à une question quiz, un son d'échec
+        quand tu te trompes, et un petit air de triomphe quand une cache est
+        marquée trouvée. Tout est généré directement sur l'appareil (aucun
+        fichier audio téléchargé). La vibration n'est pas disponible sur
+        iPhone/iPad — Safari ne supporte pas cette fonction du navigateur ;
+        les sons, eux, fonctionnent partout.
+      </p>
+      <label class="sound-toggle">
+        <input type="checkbox" id="soundToggle" checked>
+        🔊 Activer les sons et vibrations
+      </label>
+    </div>
+    <div class="data-box">
       <h2>Sauvegarde locale</h2>
       <p class="muted">
         Toutes les caches sont stockées uniquement sur cet appareil (localStorage).
@@ -392,6 +409,7 @@
 <script src="js/ar-objects.js"></script>
 <script src="js/themes.js"></script>
 <script src="js/quiz.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

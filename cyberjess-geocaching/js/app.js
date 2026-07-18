@@ -16,7 +16,53 @@
     score: ScoreStore.load(),
     quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
     simulation: { active: false },
+    settings: SettingsStore.load(),
   };
+
+  // ---------- Sound & vibration feedback ----------
+  function vibrate(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  function feedback(kind) {
+    if (!state.settings.soundEnabled) return;
+    switch (kind) {
+      case "proximity":
+        SoundFx.playProximity();
+        vibrate(80);
+        break;
+      case "correct":
+        SoundFx.playCorrect();
+        vibrate(50);
+        break;
+      case "incorrect":
+        SoundFx.playIncorrect();
+        vibrate([50, 80, 50]);
+        break;
+      case "found":
+        SoundFx.playFound();
+        vibrate([30, 50, 30, 50, 80]);
+        break;
+    }
+  }
+
+  // Autoplay policies require a user gesture before audio can play; the
+  // very first tap anywhere "unlocks" the AudioContext so later feedback
+  // (which may fire from a GPS update rather than a click) isn't blocked.
+  function unlockAudioOnce() {
+    SoundFx.ensureCtx();
+    document.removeEventListener("click", unlockAudioOnce);
+    document.removeEventListener("touchstart", unlockAudioOnce);
+  }
+  document.addEventListener("click", unlockAudioOnce, { once: true });
+  document.addEventListener("touchstart", unlockAudioOnce, { once: true });
+
+  const soundToggleEl = document.getElementById("soundToggle");
+  soundToggleEl.checked = state.settings.soundEnabled;
+  soundToggleEl.addEventListener("change", () => {
+    state.settings.soundEnabled = soundToggleEl.checked;
+    SettingsStore.save(state.settings);
+  });
 
   // ---------- Theming ----------
   const bgPatternEl = document.getElementById("bgPattern");
@@ -44,6 +90,7 @@
   }
 
   function celebrateFound() {
+    feedback("found");
     const theme = getTheme(currentThemeId);
     const burst = document.createElement("div");
     burst.className = "found-burst";
@@ -127,6 +174,7 @@
     });
     btn.classList.add(isCorrect ? "quiz-choice-correct" : "quiz-choice-wrong");
     if (!isCorrect) quizChoicesEl.children[q.correct].classList.add("quiz-choice-correct");
+    feedback(isCorrect ? "correct" : "incorrect");
 
     state.score.total += isCorrect ? points : 0;
     state.score[isCorrect ? "correct" : "incorrect"] += 1;
@@ -485,14 +533,21 @@
     `;
   }
 
+  let proximityAlertedCacheId = null;
+
   function renderScanGate(target, distance) {
     if (target.found) return '<div class="scan-gate muted">✅ Cache déjà trouvée</div>';
     if (!target.ar) return "";
     const obj = getArObject(target.ar);
     if (!obj) return "";
     if (distance <= SCAN_RADIUS_METERS) {
+      if (proximityAlertedCacheId !== target.id) {
+        proximityAlertedCacheId = target.id;
+        feedback("proximity");
+      }
       return `<div class="scan-gate"><button class="btn-primary" data-action="scan">📷 Scanner la zone</button></div>`;
     }
+    if (proximityAlertedCacheId === target.id) proximityAlertedCacheId = null;
     return `<div class="scan-gate muted">🔒 Approche-toi à moins de ${SCAN_RADIUS_METERS} m pour scanner (encore ${Geo.formatDistance(distance - SCAN_RADIUS_METERS)})</div>`;
   }
 
