@@ -136,10 +136,11 @@ Quand une équipe trouve une cache **liée à un scénario ou à un trajet
 personnalisé** (que ce soit via la liste des caches ou via le scan caméra),
 1 ou 2 questions quiz s'affichent avant que la cache soit marquée trouvée :
 
-- Les questions sont piochées dans une banque adaptée au **public et à la
-  difficulté** de l'aventure — questions simples pour un scénario enfants
-  facile, questions plus corsées (parfois à saveur cybersécurité, clin
-  d'œil à l'esprit du labo) pour un scénario adultes difficile.
+- Les questions sont piochées dans une banque de **240 questions** (40 par
+  combinaison public/difficulté) adaptée au **public et à la difficulté**
+  de l'aventure — questions simples pour un scénario enfants facile,
+  questions plus corsées (parfois à saveur cybersécurité, clin d'œil à
+  l'esprit du labo) pour un scénario adultes difficile.
 - L'app évite de reposer une question déjà utilisée pendant la même partie ;
   une fois la banque d'une case épuisée, elle recommence à piocher dedans.
 - Chaque bonne réponse rapporte des points (5 en facile, 10 en moyen, 15 en
