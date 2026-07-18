@@ -115,24 +115,34 @@ joueurs :
 Quand un checkpoint (scénario, trajet personnalisé ou cache manuelle) a un
 **objet virtuel** assigné, l'onglet **📡 Radar** affiche un bouton
 **"📷 Scanner la zone"** une fois que tu es à moins de 30 mètres. En
-l'appuyant :
+l'appuyant, la caméra arrière s'ouvre en plein écran et il faut vraiment
+**chercher** l'objet en balayant les alentours avec le téléphone :
 
-- La caméra arrière s'ouvre en plein écran.
 - Un objet qui "ne devrait pas être dans la réalité" (une orbe, un fantôme,
-  une soucoupe, une clé dorée...) flotte en surimpression du flux caméra,
-  avec un léger effet de profondeur qui réagit aux mouvements du téléphone.
-- Une fois repéré, appuie sur **"✅ J'ai trouvé l'objet !"** pour marquer le
-  checkpoint comme trouvé.
+  une soucoupe, une clé dorée...) est caché à une direction aléatoire
+  (un cap boussole) autour de toi. Il n'apparaît dans le flux caméra que
+  lorsque le téléphone pointe à peu près dans cette direction.
+- Tant qu'il n'est pas dans le champ, un indice à l'écran indique la
+  direction où tourner (**⬅️ /➡️**) et une température (« tu chauffes »,
+  « tu te réchauffes… », « c'est encore loin… ») pour guider la recherche
+  sans la rendre frustrante.
+- Une fois l'objet dans le champ, il flotte en surimpression du flux
+  caméra avec un léger effet de profondeur qui réagit aux mouvements du
+  téléphone. Appuie alors sur **"✅ J'ai trouvé l'objet !"** pour marquer
+  le checkpoint comme trouvé (ce bouton reste toujours utilisable, même
+  sans avoir localisé l'objet, pour ne jamais bloquer la partie).
 
-**Important à savoir sur cette réalité augmentée légère** : l'objet flotte
-par-dessus l'image de la caméra avec une parallaxe basée sur l'orientation
-du téléphone — il ne reste pas "ancré" à un endroit précis du décor si tu
-tournes complètement autour (ce qui demanderait un suivi spatial de type
-SLAM/WebXR, peu fiable hors-ligne et beaucoup plus lourd à développer). Le
-tout fonctionne 100% sur l'appareil, sans réseau ni bibliothèque externe.
-Si la caméra n'est pas disponible (permission refusée, appareil sans
-caméra), un message s'affiche et le bouton "J'ai trouvé l'objet !" reste
-utilisable pour ne pas bloquer la partie.
+**Important à savoir sur cette réalité augmentée légère** : cette recherche
+repose sur le cap de la boussole du téléphone (ou sur le curseur de cap du
+mode simulation, pratique pour tester sans bouger) — sans capteur
+d'orientation disponible, l'objet reste affiché au centre par défaut.
+L'objet n'est pas non plus "ancré" à un point precis du décor visuel
+(ce qui demanderait un suivi spatial de type SLAM/WebXR, peu fiable
+hors-ligne et beaucoup plus lourd à développer) : c'est une direction à
+trouver, pas un point fixe dans l'image. Tout fonctionne 100% sur
+l'appareil, sans réseau ni bibliothèque externe. Si la caméra n'est pas
+disponible (permission refusée, appareil sans caméra), un message
+s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable.
 
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
@@ -190,10 +200,12 @@ fonctionnent sur toutes les plateformes.
 
 ## Mode simulation (tester sans se déplacer)
 
-L'onglet **🧪 Simulation** permet de tester toute l'application — radar,
-scénarios, scan caméra, quiz — sans avoir à te déplacer physiquement.
-Une fois activé (bouton **"🧪 Activer la simulation"**), il remplace ta
-position GPS et ton orientation réelles par des valeurs que tu contrôles :
+Un panneau **🧪 Simulation** est intégré directement dans l'onglet
+**📡 Radar** (sous les coordonnées GPS), pour tester toute l'application —
+scénarios, scan caméra, quiz — sans jamais changer d'onglet et sans avoir
+à te déplacer physiquement. Une fois activé (bouton **"🧪 Activer la
+simulation"**), il remplace ta position GPS et ton orientation réelles par
+des valeurs que tu contrôles, directement sous le radar :
 
 - **Position manuelle** : entre une latitude/longitude et appuie sur
   **"📍 Déplacer ici"**, ou reprends ta dernière position GPS réelle comme
@@ -205,9 +217,11 @@ position GPS et ton orientation réelles par des valeurs que tu contrôles :
   position simulée d'un pas choisi (5 à 100 m) dans la direction indiquée,
   en utilisant le même calcul géodésique que le reste de l'app — de quoi
   "marcher" vers une cache et voir la distance et le cap se mettre à jour
-  en temps réel.
+  en temps réel, sans quitter le radar.
 - **Orientation simulée** : un curseur de cap (0-359°) contrôle la flèche
-  du radar sans avoir besoin de faire pivoter le téléphone.
+  du radar sans avoir besoin de faire pivoter le téléphone — et permet
+  aussi de "tourner sur soi-même" virtuellement pour tester la recherche
+  d'objet du scan caméra (voir la section précédente) depuis un bureau.
 
 Un bandeau **"🧪 Mode simulation actif"** reste affiché en haut de l'app
 tant que la simulation est active, pour ne pas la confondre avec une
@@ -324,10 +338,12 @@ connecté :
    **"Confirmer le départ"**.
 6. L'app bascule automatiquement sur l'onglet **Radar** et affiche la
    première étape : suis la flèche verte et la distance indiquée.
-7. Une fois arrivé sur une étape, va dans **Caches**, lis l'indice, puis
-   appuie sur **"✅ Marquer trouvée"**. Reviens dans **Scénarios** et
-   appuie sur **"📡 Voir sur le radar"** pour être redirigé vers la
-   prochaine étape non trouvée.
+7. Une fois arrivé sur une étape, va dans **Caches** pour lire l'indice et
+   appuyer sur **"✅ Marquer trouvée"** (ou termine le scan caméra si un
+   objet virtuel est associé). L'onglet **Radar** affiche alors directement
+   un bouton **"➡️ Cache suivante"** vers la prochaine étape non trouvée —
+   plus besoin de repasser par l'onglet Scénarios pour enchaîner les
+   étapes.
 8. **Pour jouer à plusieurs appareils sans réseau** : chaque joueur répète
    les étapes 1 à 5 en démarrant **exactement au même endroit physique**
    (voir l'explication du mécanisme plus haut).
