@@ -168,6 +168,36 @@ plusieurs téléphones).
 Pour enrichir la banque de questions, complète les tableaux du fichier
 `js/quiz.js` (un tableau par combinaison public/difficulté).
 
+## Mode simulation (tester sans se déplacer)
+
+L'onglet **🧪 Simulation** permet de tester toute l'application — radar,
+scénarios, scan caméra, quiz — sans avoir à te déplacer physiquement.
+Une fois activé (bouton **"🧪 Activer la simulation"**), il remplace ta
+position GPS et ton orientation réelles par des valeurs que tu contrôles :
+
+- **Position manuelle** : entre une latitude/longitude et appuie sur
+  **"📍 Déplacer ici"**, ou reprends ta dernière position GPS réelle comme
+  point de départ.
+- **🎯 Aller à la cache ciblée** : téléporte directement la position
+  simulée sur la cache actuellement pointée sur le radar — pratique pour
+  tester le scan caméra (qui demande d'être à moins de 30 m) sans marcher.
+- **Déplacement virtuel** : les 8 flèches directionnelles avancent la
+  position simulée d'un pas choisi (5 à 100 m) dans la direction indiquée,
+  en utilisant le même calcul géodésique que le reste de l'app — de quoi
+  "marcher" vers une cache et voir la distance et le cap se mettre à jour
+  en temps réel.
+- **Orientation simulée** : un curseur de cap (0-359°) contrôle la flèche
+  du radar sans avoir besoin de faire pivoter le téléphone.
+
+Un bandeau **"🧪 Mode simulation actif"** reste affiché en haut de l'app
+tant que la simulation est active, pour ne pas la confondre avec une
+vraie partie. Le bouton **"⏹️ Désactiver la simulation"** restaure
+immédiatement le GPS et la boussole réels. Comme la simulation agit sur
+la même position utilisée partout ailleurs dans l'app, les boutons
+"Utiliser ma position GPS actuelle" (formulaire d'ajout, lancement de
+scénario, checkpoint du mode Maître du jeu) utilisent aussi la position
+simulée tant qu'elle est active.
+
 ## Installation sur un téléphone
 
 **Point important** : comme toute application web, elle doit être ouverte
