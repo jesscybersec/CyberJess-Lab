@@ -4,7 +4,8 @@
   const state = {
     caches: CacheStore.loadAll(),
     trails: CustomTrailStore.loadAll(),
-    position: null, // {lat, lon, accuracy}
+    position: null, // {lat, lon, accuracy} — effective position, real or simulated
+    lastRealPosition: null, // last position reported by the real GPS, kept even while simulating
     heading: null, // degrees, 0 = north
     tiltBeta: null, // device front-back tilt, used for AR parallax
     tiltGamma: null, // device left-right tilt, used for AR parallax
@@ -14,7 +15,54 @@
     scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null },
     score: ScoreStore.load(),
     quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
+    simulation: { active: false },
+    settings: SettingsStore.load(),
   };
+
+  // ---------- Sound & vibration feedback ----------
+  function vibrate(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  function feedback(kind) {
+    if (!state.settings.soundEnabled) return;
+    switch (kind) {
+      case "proximity":
+        SoundFx.playProximity();
+        vibrate(80);
+        break;
+      case "correct":
+        SoundFx.playCorrect();
+        vibrate(50);
+        break;
+      case "incorrect":
+        SoundFx.playIncorrect();
+        vibrate([50, 80, 50]);
+        break;
+      case "found":
+        SoundFx.playFound();
+        vibrate([30, 50, 30, 50, 80]);
+        break;
+    }
+  }
+
+  // Autoplay policies require a user gesture before audio can play; the
+  // very first tap anywhere "unlocks" the AudioContext so later feedback
+  // (which may fire from a GPS update rather than a click) isn't blocked.
+  function unlockAudioOnce() {
+    SoundFx.ensureCtx();
+    document.removeEventListener("click", unlockAudioOnce);
+    document.removeEventListener("touchstart", unlockAudioOnce);
+  }
+  document.addEventListener("click", unlockAudioOnce, { once: true });
+  document.addEventListener("touchstart", unlockAudioOnce, { once: true });
+
+  const soundToggleEl = document.getElementById("soundToggle");
+  soundToggleEl.checked = state.settings.soundEnabled;
+  soundToggleEl.addEventListener("change", () => {
+    state.settings.soundEnabled = soundToggleEl.checked;
+    SettingsStore.save(state.settings);
+  });
 
   // ---------- Theming ----------
   const bgPatternEl = document.getElementById("bgPattern");
@@ -42,6 +90,7 @@
   }
 
   function celebrateFound() {
+    feedback("found");
     const theme = getTheme(currentThemeId);
     const burst = document.createElement("div");
     burst.className = "found-burst";
@@ -125,6 +174,7 @@
     });
     btn.classList.add(isCorrect ? "quiz-choice-correct" : "quiz-choice-wrong");
     if (!isCorrect) quizChoicesEl.children[q.correct].classList.add("quiz-choice-correct");
+    feedback(isCorrect ? "correct" : "incorrect");
 
     state.score.total += isCorrect ? points : 0;
     state.score[isCorrect ? "correct" : "incorrect"] += 1;
@@ -187,17 +237,25 @@
   const gpsLabelEl = document.getElementById("gpsLabel");
   const coordsReadoutEl = document.getElementById("coordsReadout");
 
+  function renderCoordsReadout() {
+    if (!state.position) return;
+    const simTag = state.simulation.active ? " (simulée)" : "";
+    coordsReadoutEl.textContent =
+      `lat: ${state.position.lat.toFixed(6)}, lon: ${state.position.lon.toFixed(6)} ` +
+      `(précision: ±${Math.round(state.position.accuracy)} m)${simTag}`;
+  }
+
   function onPosition(pos) {
-    state.position = {
+    state.lastRealPosition = {
       lat: pos.coords.latitude,
       lon: pos.coords.longitude,
       accuracy: pos.coords.accuracy,
     };
     gpsStatusEl.className = "gps-status gps-ok";
     gpsLabelEl.textContent = "Position acquise";
-    coordsReadoutEl.textContent =
-      `lat: ${state.position.lat.toFixed(6)}, lon: ${state.position.lon.toFixed(6)} ` +
-      `(précision: ±${Math.round(state.position.accuracy)} m)`;
+    if (state.simulation.active) return; // simulated position takes over
+    state.position = state.lastRealPosition;
+    renderCoordsReadout();
     renderCacheList();
     renderRadar();
   }
@@ -221,6 +279,7 @@
   const enableOrientationBtn = document.getElementById("enableOrientationBtn");
 
   function handleOrientation(evt) {
+    if (state.simulation.active) return; // simulated heading takes over
     if (evt.beta !== null) state.tiltBeta = evt.beta;
     if (evt.gamma !== null) state.tiltGamma = evt.gamma;
 
@@ -255,6 +314,106 @@
   } else if (typeof DeviceOrientationEvent !== "undefined") {
     startOrientation();
   }
+
+  // ---------- Simulation mode ----------
+  const simBannerEl = document.getElementById("simBanner");
+  const simToggleBtn = document.getElementById("simToggleBtn");
+  const simStatusLabelEl = document.getElementById("simStatusLabel");
+  const simStatusHintEl = document.getElementById("simStatusHint");
+  const simControlsEl = document.getElementById("simControls");
+  const simLatEl = document.getElementById("simLat");
+  const simLonEl = document.getElementById("simLon");
+  const simPadEl = document.getElementById("simPad");
+  const simHeadingSliderEl = document.getElementById("simHeadingSlider");
+  const simHeadingValueEl = document.getElementById("simHeadingValue");
+
+  function renderSimulationView() {
+    const active = state.simulation.active;
+    simBannerEl.classList.toggle("hidden", !active);
+    simControlsEl.classList.toggle("hidden", !active);
+    simToggleBtn.textContent = active ? "⏹️ Désactiver la simulation" : "🧪 Activer la simulation";
+    simToggleBtn.className = active ? "btn-danger" : "btn-primary";
+    simStatusLabelEl.textContent = active ? "Simulation activée" : "Simulation désactivée";
+    simStatusHintEl.textContent = active
+      ? "La position et la boussole réelles sont ignorées tant que la simulation est active."
+      : "Le GPS et la boussole réels sont utilisés normalement.";
+
+    if (active && state.position) {
+      simLatEl.value = state.position.lat;
+      simLonEl.value = state.position.lon;
+    }
+    simHeadingSliderEl.value = state.heading || 0;
+    simHeadingValueEl.textContent = `${Math.round(state.heading || 0)}°`;
+  }
+
+  function moveSimulatedPosition(lat, lon) {
+    state.position = { lat, lon, accuracy: 5 };
+    renderCoordsReadout();
+    renderCacheList();
+    renderRadar();
+    renderSimulationView();
+  }
+
+  simToggleBtn.addEventListener("click", () => {
+    if (state.simulation.active) {
+      state.simulation.active = false;
+      if (state.lastRealPosition) state.position = state.lastRealPosition;
+    } else {
+      state.simulation.active = true;
+      if (!state.position && state.lastRealPosition) state.position = { ...state.lastRealPosition };
+      if (state.heading === null) state.heading = 0;
+    }
+    renderCoordsReadout();
+    renderCacheList();
+    renderRadar();
+    renderSimulationView();
+  });
+
+  document.getElementById("simApplyBtn").addEventListener("click", () => {
+    const lat = Number(simLatEl.value);
+    const lon = Number(simLonEl.value);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      alert("Merci d'entrer une latitude et une longitude valides.");
+      return;
+    }
+    moveSimulatedPosition(lat, lon);
+  });
+
+  document.getElementById("simUseRealBtn").addEventListener("click", () => {
+    if (!state.lastRealPosition) {
+      alert("Aucune position GPS réelle connue pour le moment.");
+      return;
+    }
+    moveSimulatedPosition(state.lastRealPosition.lat, state.lastRealPosition.lon);
+  });
+
+  document.getElementById("simGotoTargetBtn").addEventListener("click", () => {
+    const target = getTarget();
+    if (!target) {
+      alert("Aucune cache ciblée sur le radar pour le moment.");
+      return;
+    }
+    moveSimulatedPosition(target.lat, target.lon);
+  });
+
+  simPadEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest("button[data-bearing]");
+    if (!btn) return;
+    if (!state.position) {
+      alert("Entre d'abord une position de départ ci-dessus.");
+      return;
+    }
+    const bearing = Number(btn.dataset.bearing);
+    const step = Number(document.getElementById("simStep").value);
+    const dest = Geo.destinationPoint(state.position.lat, state.position.lon, bearing, step);
+    moveSimulatedPosition(dest.lat, dest.lon);
+  });
+
+  simHeadingSliderEl.addEventListener("input", (evt) => {
+    state.heading = Number(evt.target.value);
+    simHeadingValueEl.textContent = `${state.heading}°`;
+    renderRadar();
+  });
 
   // ---------- Radar / compass rendering ----------
   const canvas = document.getElementById("compassCanvas");
@@ -374,14 +533,21 @@
     `;
   }
 
+  let proximityAlertedCacheId = null;
+
   function renderScanGate(target, distance) {
     if (target.found) return '<div class="scan-gate muted">✅ Cache déjà trouvée</div>';
     if (!target.ar) return "";
     const obj = getArObject(target.ar);
     if (!obj) return "";
     if (distance <= SCAN_RADIUS_METERS) {
+      if (proximityAlertedCacheId !== target.id) {
+        proximityAlertedCacheId = target.id;
+        feedback("proximity");
+      }
       return `<div class="scan-gate"><button class="btn-primary" data-action="scan">📷 Scanner la zone</button></div>`;
     }
+    if (proximityAlertedCacheId === target.id) proximityAlertedCacheId = null;
     return `<div class="scan-gate muted">🔒 Approche-toi à moins de ${SCAN_RADIUS_METERS} m pour scanner (encore ${Geo.formatDistance(distance - SCAN_RADIUS_METERS)})</div>`;
   }
 
@@ -1196,4 +1362,5 @@
   renderGmView();
   renderTrailList();
   renderScoreboard();
+  renderSimulationView();
 })();

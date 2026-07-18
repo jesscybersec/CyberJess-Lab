@@ -119,3 +119,25 @@ const ScoreStore = (() => {
 
   return { load, save, reset };
 })();
+
+// Préférences simples de l'app (pour l'instant : sons/vibrations).
+const SettingsStore = (() => {
+  const KEY = "settings_v1";
+  const DEFAULTS = { soundEnabled: true };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS };
+    } catch (e) {
+      console.error("Failed to read settings store", e);
+      return { ...DEFAULTS };
+    }
+  }
+
+  function save(settings) {
+    localStorage.setItem(KEY, JSON.stringify(settings));
+  }
+
+  return { load, save };
+})();
