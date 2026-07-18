@@ -186,6 +186,18 @@
       </label>
     </div>
     <div id="trailList" class="scenario-list"></div>
+
+    <div class="data-box scoreboard-box">
+      <h2>🏆 Tableau des scores</h2>
+      <p class="muted">
+        Ce score n'est visible que dans cet onglet, réservé au maître du jeu —
+        il n'apparaît nulle part ailleurs dans l'app pour les joueurs.
+        Chaque cache trouvée liée à un scénario ou un trajet déclenche 1 ou 2
+        questions quiz adaptées au public et à la difficulté de l'aventure.
+      </p>
+      <div id="scoreboardDisplay" class="scoreboard-display"></div>
+      <button type="button" id="resetScoreBtn" class="btn-danger">🗑️ Réinitialiser le score</button>
+    </div>
   </section>
 
   <!-- LIST TAB -->
@@ -292,11 +304,26 @@
   </div>
 </div>
 
+<!-- Quiz modal -->
+<div id="quizModal" class="quiz-modal hidden">
+  <div class="quiz-box">
+    <div id="quizProgress" class="quiz-progress"></div>
+    <h2 id="quizQuestionText" class="quiz-question"></h2>
+    <div id="quizChoices" class="quiz-choices"></div>
+    <div id="quizFeedback" class="quiz-feedback hidden"></div>
+    <div class="form-actions">
+      <button type="button" id="quizNextBtn" class="btn-primary hidden">Question suivante</button>
+      <button type="button" id="quizSkipBtn" class="btn-secondary">Passer le quiz</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/geo.js"></script>
 <script src="js/db.js"></script>
 <script src="js/scenarios.js"></script>
 <script src="js/ar-objects.js"></script>
 <script src="js/themes.js"></script>
+<script src="js/quiz.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

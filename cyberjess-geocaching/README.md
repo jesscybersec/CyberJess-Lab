@@ -130,6 +130,35 @@ Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
 dans le formulaire de checkpoint du mode Maître du jeu.
 
+## Quiz et tableau des scores
+
+Quand une équipe trouve une cache **liée à un scénario ou à un trajet
+personnalisé** (que ce soit via la liste des caches ou via le scan caméra),
+1 ou 2 questions quiz s'affichent avant que la cache soit marquée trouvée :
+
+- Les questions sont piochées dans une banque adaptée au **public et à la
+  difficulté** de l'aventure — questions simples pour un scénario enfants
+  facile, questions plus corsées (parfois à saveur cybersécurité, clin
+  d'œil à l'esprit du labo) pour un scénario adultes difficile.
+- L'app évite de reposer une question déjà utilisée pendant la même partie ;
+  une fois la banque d'une case épuisée, elle recommence à piocher dedans.
+- Chaque bonne réponse rapporte des points (5 en facile, 10 en moyen, 15 en
+  difficile). Il est toujours possible d'appuyer sur **"Passer le quiz"**
+  pour marquer la cache trouvée sans répondre.
+- Les caches ajoutées manuellement (onglet **➕ Ajouter**, sans scénario
+  associé) ne déclenchent pas de quiz — il n'y a pas de niveau à leur
+  associer.
+
+Le score cumulé est **visible uniquement dans l'onglet 🎓 Maître du jeu**,
+sous la liste des trajets : les joueurs ne le voient nulle part ailleurs
+dans l'app. Le bouton **"🗑️ Réinitialiser le score"** permet de repartir à
+zéro une fois la partie terminée. Comme tout le reste, le score est propre
+à l'appareil sur lequel il est suivi (pas de synchronisation réseau entre
+plusieurs téléphones).
+
+Pour enrichir la banque de questions, complète les tableaux du fichier
+`js/quiz.js` (un tableau par combinaison public/difficulté).
+
 ## Installation sur un téléphone
 
 **Point important** : comme toute application web, elle doit être ouverte
@@ -298,10 +327,12 @@ cyberjess-geocaching/
 ├── css/style.css
 ├── js/
 │   ├── geo.js            # distance/cap (haversine, bearing) + destinationPoint (cap+distance -> lat/lon)
-│   ├── db.js             # persistance localStorage (caches + trajets personnalisés)
+│   ├── db.js             # persistance localStorage (caches, trajets, score du quiz)
 │   ├── scenarios.js      # scénarios préenregistrés (enfants/adultes x facile/moyen/difficile)
 │   ├── ar-objects.js     # bibliothèque d'objets virtuels pour le scan caméra
-│   └── app.js            # logique de l'app (GPS, boussole, scénarios, mode MJ, scan AR, CRUD, import/export)
+│   ├── themes.js         # palettes visuelles par scénario/trajet
+│   ├── quiz.js           # banque de questions quiz (par public + difficulté)
+│   └── app.js            # logique de l'app (GPS, boussole, scénarios, mode MJ, scan AR, quiz, CRUD, import/export)
 └── icons/icon.svg
 ```
 
