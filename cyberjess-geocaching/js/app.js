@@ -12,7 +12,7 @@
     targetId: null,
     orientationEnabled: false,
     recording: null, // in-progress custom trail: {id, title, ..., waypoints: []}
-    scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null },
+    scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null },
     score: ScoreStore.load(),
     quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
     simulation: { active: false },
@@ -318,8 +318,6 @@
   // ---------- Simulation mode ----------
   const simBannerEl = document.getElementById("simBanner");
   const simToggleBtn = document.getElementById("simToggleBtn");
-  const simStatusLabelEl = document.getElementById("simStatusLabel");
-  const simStatusHintEl = document.getElementById("simStatusHint");
   const simControlsEl = document.getElementById("simControls");
   const simLatEl = document.getElementById("simLat");
   const simLonEl = document.getElementById("simLon");
@@ -332,11 +330,7 @@
     simBannerEl.classList.toggle("hidden", !active);
     simControlsEl.classList.toggle("hidden", !active);
     simToggleBtn.textContent = active ? "⏹️ Désactiver la simulation" : "🧪 Activer la simulation";
-    simToggleBtn.className = active ? "btn-danger" : "btn-primary";
-    simStatusLabelEl.textContent = active ? "Simulation activée" : "Simulation désactivée";
-    simStatusHintEl.textContent = active
-      ? "La position et la boussole réelles sont ignorées tant que la simulation est active."
-      : "Le GPS et la boussole réels sont utilisés normalement.";
+    simToggleBtn.className = active ? "btn-danger" : "btn-secondary";
 
     if (active && state.position) {
       simLatEl.value = state.position.lat;
@@ -536,7 +530,20 @@
   let proximityAlertedCacheId = null;
 
   function renderScanGate(target, distance) {
-    if (target.found) return '<div class="scan-gate muted">✅ Cache déjà trouvée</div>';
+    if (target.found) {
+      if (!target.scenarioId) return '<div class="scan-gate muted">✅ Cache déjà trouvée</div>';
+      const ids = scenarioCacheIds(target.scenarioId);
+      const next = state.caches.find((c) => ids.includes(c.id) && !c.found);
+      if (next) {
+        return `
+          <div class="scan-gate">
+            <p class="muted">✅ Cache trouvée !</p>
+            <button class="btn-primary" data-action="next-cache" data-next-id="${next.id}">➡️ Cache suivante : ${escapeHtml(next.name)}</button>
+          </div>
+        `;
+      }
+      return '<div class="scan-gate muted">✅ Cache trouvée — 🎉 Scénario terminé, bravo !</div>';
+    }
     if (!target.ar) return "";
     const obj = getArObject(target.ar);
     if (!obj) return "";
@@ -552,19 +559,34 @@
   }
 
   radarInfoEl.addEventListener("click", (evt) => {
-    const btn = evt.target.closest('button[data-action="scan"]');
-    if (!btn) return;
-    const target = getTarget();
-    if (target) openScanner(target);
+    const scanBtn = evt.target.closest('button[data-action="scan"]');
+    if (scanBtn) {
+      const target = getTarget();
+      if (target) openScanner(target);
+      return;
+    }
+    const nextBtn = evt.target.closest('button[data-action="next-cache"]');
+    if (nextBtn) {
+      state.targetId = nextBtn.dataset.nextId;
+      renderRadar();
+    }
   });
 
   // ---------- AR scanner (camera + floating virtual object) ----------
+  const AR_SEARCH_FOV_DEG = 55; // how wide a "field of view" reveals the object
+
   const arScannerEl = document.getElementById("arScanner");
   const arVideoEl = document.getElementById("arVideo");
   const arCanvasEl = document.getElementById("arCanvas");
   const arCtx = arCanvasEl.getContext("2d");
   const arObjectLabelEl = document.getElementById("arObjectLabel");
+  const arSearchHintEl = document.getElementById("arSearchHint");
   const arErrorEl = document.getElementById("arError");
+
+  // Smallest signed angle to rotate `from` by to reach `to`, in (-180, 180].
+  function signedAngleDiff(from, to) {
+    return ((to - from + 540) % 360) - 180;
+  }
 
   async function openScanner(cache) {
     const obj = getArObject(cache.ar);
@@ -572,7 +594,13 @@
 
     state.scanner.cacheId = cache.id;
     state.scanner.baselineBeta = state.tiltBeta;
+    // The object is "hidden" at a random compass bearing: with a real or
+    // simulated heading available, finding it means physically panning the
+    // camera around (or dragging the simulated heading slider) until it
+    // comes into view, instead of it just floating in the middle of frame.
+    state.scanner.objectBearing = Math.random() * 360;
     arObjectLabelEl.textContent = `Cherche : ${obj.emoji} ${obj.label}`;
+    arSearchHintEl.classList.add("hidden");
     arErrorEl.classList.add("hidden");
     arScannerEl.classList.remove("hidden");
     resizeArCanvas();
@@ -601,31 +629,52 @@
   function runArLoop(obj) {
     const cx = arCanvasEl.width / 2;
     const cy = arCanvasEl.height / 2;
-    const maxOffset = 70;
+    const maxOffset = Math.min(arCanvasEl.width, arCanvasEl.height) * 0.32;
+    const halfFov = AR_SEARCH_FOV_DEG / 2;
 
     function frame(timestamp) {
       if (!state.scanner.cacheId) return; // scanner closed
       arCtx.clearRect(0, 0, arCanvasEl.width, arCanvasEl.height);
 
-      const gamma = state.tiltGamma || 0;
-      const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
-        ? state.tiltBeta - state.scanner.baselineBeta
-        : 0;
-      const offsetX = Math.max(-maxOffset, Math.min(maxOffset, -gamma * 2.2));
-      const offsetY = Math.max(-maxOffset, Math.min(maxOffset, -betaDelta * 2.2));
-      const bob = Math.sin(timestamp / 500) * 10;
+      // Without any heading (no compass permission, not simulating), we
+      // can't gate by direction — fall back to always-visible so the
+      // feature still works, just without the search mechanic.
+      const hasHeading = state.heading !== null;
+      const diff = hasHeading ? signedAngleDiff(state.heading, state.scanner.objectBearing) : 0;
+      const inView = !hasHeading || Math.abs(diff) <= halfFov;
 
-      const x = cx + offsetX;
-      const y = cy + offsetY + bob;
+      if (inView) {
+        arSearchHintEl.classList.add("hidden");
 
-      arCtx.save();
-      arCtx.shadowColor = obj.color;
-      arCtx.shadowBlur = 35;
-      arCtx.font = "72px 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
-      arCtx.textAlign = "center";
-      arCtx.textBaseline = "middle";
-      arCtx.fillText(obj.emoji, x, y);
-      arCtx.restore();
+        const gamma = state.tiltGamma || 0;
+        const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
+          ? state.tiltBeta - state.scanner.baselineBeta
+          : 0;
+        const bearingOffsetX = hasHeading ? (diff / halfFov) * maxOffset : 0;
+        const tiltOffsetX = Math.max(-30, Math.min(30, -gamma * 1.2));
+        const offsetY = Math.max(-50, Math.min(50, -betaDelta * 2));
+        const bob = Math.sin(timestamp / 500) * 10;
+
+        const x = cx + bearingOffsetX + tiltOffsetX;
+        const y = cy + offsetY + bob;
+
+        arCtx.save();
+        arCtx.shadowColor = obj.color;
+        arCtx.shadowBlur = 35;
+        arCtx.font = "72px 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+        arCtx.textAlign = "center";
+        arCtx.textBaseline = "middle";
+        arCtx.fillText(obj.emoji, x, y);
+        arCtx.restore();
+      } else {
+        const turnRight = diff > 0;
+        const distance = Math.abs(diff);
+        const arrow = turnRight ? "➡️" : "⬅️";
+        const dirText = turnRight ? "Tourne à droite" : "Tourne à gauche";
+        const tempText = distance < halfFov + 20 ? "tu chauffes !" : distance < 100 ? "tu te réchauffes…" : "c'est encore loin…";
+        arSearchHintEl.textContent = `${arrow} ${dirText} — ${tempText}`;
+        arSearchHintEl.classList.remove("hidden");
+      }
 
       state.scanner.rafId = requestAnimationFrame(frame);
     }
@@ -636,7 +685,7 @@
   function closeScanner() {
     if (state.scanner.rafId) cancelAnimationFrame(state.scanner.rafId);
     if (state.scanner.stream) state.scanner.stream.getTracks().forEach((t) => t.stop());
-    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null };
+    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null };
     arVideoEl.srcObject = null;
     arScannerEl.classList.add("hidden");
   }

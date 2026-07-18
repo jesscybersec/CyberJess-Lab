@@ -40,7 +40,6 @@
   <button class="tab-btn" data-tab="list">🗂️ Caches</button>
   <button class="tab-btn" data-tab="add">➕ Ajouter</button>
   <button class="tab-btn" data-tab="data">💾 Données</button>
-  <button class="tab-btn" data-tab="sim">🧪 Simulation</button>
 </nav>
 
 <main>
@@ -58,6 +57,54 @@
     </div>
     <div class="coords-readout" id="coordsReadout">
       lat: -- , lon: -- (précision: --)
+    </div>
+
+    <div class="sim-inline">
+      <button type="button" id="simToggleBtn" class="btn-secondary">🧪 Activer la simulation</button>
+      <div id="simControls" class="sim-inline-controls hidden">
+        <p class="muted">
+          Déplace virtuellement ta position pour tester sans te déplacer réellement.
+          Désactive la simulation avant une vraie partie.
+        </p>
+        <div class="row">
+          <label>Latitude
+            <input type="number" step="any" id="simLat">
+          </label>
+          <label>Longitude
+            <input type="number" step="any" id="simLon">
+          </label>
+        </div>
+        <div class="data-actions">
+          <button type="button" id="simApplyBtn" class="btn-secondary">📍 Déplacer ici</button>
+          <button type="button" id="simUseRealBtn" class="btn-secondary">📡 Dernière position GPS</button>
+          <button type="button" id="simGotoTargetBtn" class="btn-secondary">🎯 Aller à la cache ciblée</button>
+        </div>
+        <div class="row">
+          <label>Pas de déplacement
+            <select id="simStep">
+              <option value="5">5 m</option>
+              <option value="10" selected>10 m</option>
+              <option value="25">25 m</option>
+              <option value="50">50 m</option>
+              <option value="100">100 m</option>
+            </select>
+          </label>
+          <label>Cap simulé : <span id="simHeadingValue">0°</span>
+            <input type="range" id="simHeadingSlider" min="0" max="359" value="0">
+          </label>
+        </div>
+        <div id="simPad" class="sim-pad">
+          <button type="button" data-bearing="315">↖️</button>
+          <button type="button" data-bearing="0">⬆️ N</button>
+          <button type="button" data-bearing="45">↗️</button>
+          <button type="button" data-bearing="270">⬅️ O</button>
+          <span class="sim-pad-center">🧭</span>
+          <button type="button" data-bearing="90">➡️ E</button>
+          <button type="button" data-bearing="225">↙️</button>
+          <button type="button" data-bearing="180">⬇️ S</button>
+          <button type="button" data-bearing="135">↘️</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -310,68 +357,6 @@
     </div>
   </section>
 
-  <!-- SIMULATION TAB -->
-  <section id="tab-sim" class="tab-panel">
-    <p class="muted scenario-intro">
-      Le mode simulation remplace ta position GPS et ton orientation réelles par des
-      valeurs simulées, pour tester radar, scénarios, scan et quiz sans avoir besoin de
-      te déplacer. Désactive-le avant une vraie partie pour revenir au GPS réel.
-    </p>
-
-    <div class="data-box">
-      <div class="sim-toggle-row">
-        <div>
-          <strong id="simStatusLabel">Simulation désactivée</strong>
-          <p class="muted" id="simStatusHint">Le GPS et la boussole réels sont utilisés normalement.</p>
-        </div>
-        <button type="button" id="simToggleBtn" class="btn-primary">🧪 Activer la simulation</button>
-      </div>
-    </div>
-
-    <div id="simControls" class="data-box hidden">
-      <h2>Position simulée</h2>
-      <div class="row">
-        <label>Latitude
-          <input type="number" step="any" id="simLat">
-        </label>
-        <label>Longitude
-          <input type="number" step="any" id="simLon">
-        </label>
-      </div>
-      <div class="data-actions">
-        <button type="button" id="simApplyBtn" class="btn-secondary">📍 Déplacer ici</button>
-        <button type="button" id="simUseRealBtn" class="btn-secondary">📡 Utiliser la dernière position GPS connue</button>
-        <button type="button" id="simGotoTargetBtn" class="btn-secondary">🎯 Aller à la cache ciblée</button>
-      </div>
-
-      <h2>Se déplacer virtuellement</h2>
-      <label>Pas de déplacement
-        <select id="simStep">
-          <option value="5">5 m</option>
-          <option value="10" selected>10 m</option>
-          <option value="25">25 m</option>
-          <option value="50">50 m</option>
-          <option value="100">100 m</option>
-        </select>
-      </label>
-      <div id="simPad" class="sim-pad">
-        <button type="button" data-bearing="315">↖️</button>
-        <button type="button" data-bearing="0">⬆️ N</button>
-        <button type="button" data-bearing="45">↗️</button>
-        <button type="button" data-bearing="270">⬅️ O</button>
-        <span class="sim-pad-center">🧭</span>
-        <button type="button" data-bearing="90">➡️ E</button>
-        <button type="button" data-bearing="225">↙️</button>
-        <button type="button" data-bearing="180">⬇️ S</button>
-        <button type="button" data-bearing="135">↘️</button>
-      </div>
-
-      <h2>Orientation simulée (cap)</h2>
-      <label>Cap : <span id="simHeadingValue">0°</span>
-        <input type="range" id="simHeadingSlider" min="0" max="359" value="0">
-      </label>
-    </div>
-  </section>
 
 </main>
 
@@ -380,8 +365,11 @@
   <video id="arVideo" class="ar-video" autoplay playsinline muted></video>
   <canvas id="arCanvas" class="ar-canvas"></canvas>
   <div class="ar-ui">
-    <div id="arObjectLabel" class="ar-object-label"></div>
-    <div id="arError" class="ar-error hidden"></div>
+    <div class="ar-top">
+      <div id="arObjectLabel" class="ar-object-label"></div>
+      <div id="arSearchHint" class="ar-search-hint hidden"></div>
+      <div id="arError" class="ar-error hidden"></div>
+    </div>
     <div class="ar-actions">
       <button id="arFoundBtn" class="btn-primary">✅ J'ai trouvé l'objet !</button>
       <button id="arCloseBtn" class="btn-secondary">✖️ Fermer</button>
