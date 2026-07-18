@@ -12,6 +12,8 @@
     orientationEnabled: false,
     recording: null, // in-progress custom trail: {id, title, ..., waypoints: []}
     scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null },
+    score: ScoreStore.load(),
+    quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
   };
 
   // ---------- Theming ----------
@@ -47,6 +49,128 @@
     document.body.appendChild(burst);
     setTimeout(() => burst.remove(), 1000);
   }
+
+  // ---------- Quiz & scoreboard ----------
+  const quizModalEl = document.getElementById("quizModal");
+  const quizProgressEl = document.getElementById("quizProgress");
+  const quizQuestionTextEl = document.getElementById("quizQuestionText");
+  const quizChoicesEl = document.getElementById("quizChoices");
+  const quizFeedbackEl = document.getElementById("quizFeedback");
+  const quizNextBtnEl = document.getElementById("quizNextBtn");
+  const quizSkipBtnEl = document.getElementById("quizSkipBtn");
+  const scoreboardDisplayEl = document.getElementById("scoreboardDisplay");
+
+  function finalizeFound(cache) {
+    cache.found = true;
+    state.caches = CacheStore.upsert(cache);
+    renderCacheList();
+    renderRadar();
+    renderScenarioList();
+    renderTrailList();
+    celebrateFound();
+  }
+
+  // A cache earns its team a quiz only when it's tied to a scenario or a
+  // custom trail (that's where audience + difficulty come from) and that
+  // bucket actually has questions. Standalone manually-added caches skip
+  // straight to being marked found.
+  function markCacheFound(cache) {
+    const owner = cache.scenarioId
+      ? SCENARIOS.find((s) => s.id === cache.scenarioId) || trailById(cache.scenarioId)
+      : null;
+    const picked = owner ? pickQuizQuestions(owner.audience, owner.difficultyLabel, 2, state.score.usedQuestions) : null;
+
+    if (!picked) {
+      finalizeFound(cache);
+      return;
+    }
+
+    state.score.usedQuestions[picked.key] = (state.score.usedQuestions[picked.key] || []).concat(picked.indices);
+    ScoreStore.save(state.score);
+
+    state.quiz = {
+      cacheId: cache.id,
+      difficultyLabel: owner.difficultyLabel,
+      questions: picked.questions,
+      currentIndex: 0,
+    };
+    renderQuizQuestion();
+    quizModalEl.classList.remove("hidden");
+  }
+
+  function renderQuizQuestion() {
+    const quiz = state.quiz;
+    const q = quiz.questions[quiz.currentIndex];
+    quizProgressEl.textContent = `Question ${quiz.currentIndex + 1} / ${quiz.questions.length}`;
+    quizQuestionTextEl.textContent = q.q;
+    quizFeedbackEl.classList.add("hidden");
+    quizNextBtnEl.classList.add("hidden");
+    quizChoicesEl.innerHTML = q.choices
+      .map((choice, i) => `<button type="button" class="btn-secondary" data-choice="${i}">${escapeHtml(choice)}</button>`)
+      .join("");
+  }
+
+  quizChoicesEl.addEventListener("click", (evt) => {
+    const btn = evt.target.closest("button[data-choice]");
+    if (!btn || !state.quiz) return;
+
+    const quiz = state.quiz;
+    const q = quiz.questions[quiz.currentIndex];
+    const choiceIndex = Number(btn.dataset.choice);
+    const isCorrect = choiceIndex === q.correct;
+    const points = QUIZ_POINTS[quiz.difficultyLabel] || 5;
+
+    Array.from(quizChoicesEl.children).forEach((b) => {
+      b.disabled = true;
+    });
+    btn.classList.add(isCorrect ? "quiz-choice-correct" : "quiz-choice-wrong");
+    if (!isCorrect) quizChoicesEl.children[q.correct].classList.add("quiz-choice-correct");
+
+    state.score.total += isCorrect ? points : 0;
+    state.score[isCorrect ? "correct" : "incorrect"] += 1;
+    ScoreStore.save(state.score);
+    renderScoreboard();
+
+    quizFeedbackEl.textContent = isCorrect ? `✅ Bonne réponse ! +${points} points` : "❌ Mauvaise réponse.";
+    quizFeedbackEl.classList.remove("hidden");
+    quizNextBtnEl.classList.remove("hidden");
+    quizNextBtnEl.textContent = quiz.currentIndex + 1 < quiz.questions.length ? "Question suivante" : "Terminer";
+  });
+
+  quizNextBtnEl.addEventListener("click", () => {
+    if (!state.quiz) return;
+    state.quiz.currentIndex += 1;
+    if (state.quiz.currentIndex < state.quiz.questions.length) {
+      renderQuizQuestion();
+    } else {
+      closeQuiz();
+    }
+  });
+
+  quizSkipBtnEl.addEventListener("click", closeQuiz);
+
+  function closeQuiz() {
+    const cacheId = state.quiz ? state.quiz.cacheId : null;
+    quizModalEl.classList.add("hidden");
+    state.quiz = null;
+    if (!cacheId) return;
+    const cache = state.caches.find((c) => c.id === cacheId);
+    if (cache) finalizeFound(cache);
+  }
+
+  function renderScoreboard() {
+    scoreboardDisplayEl.innerHTML = `
+      <div class="score-total">${state.score.total} points</div>
+      <div class="muted">${state.score.correct} bonne(s) réponse(s) · ${state.score.incorrect} erreur(s)</div>
+    `;
+  }
+
+  document.getElementById("resetScoreBtn").addEventListener("click", () => {
+    if (confirm("Réinitialiser le score à zéro ? Cette action est irréversible.")) {
+      state.score = ScoreStore.reset();
+      renderScoreboard();
+    }
+  });
 
   // ---------- Tabs ----------
   document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -362,13 +486,7 @@
     const cache = state.caches.find((c) => c.id === cacheId);
     closeScanner();
     if (!cache) return;
-    cache.found = true;
-    state.caches = CacheStore.upsert(cache);
-    renderCacheList();
-    renderRadar();
-    renderScenarioList();
-    renderTrailList();
-    celebrateFound();
+    markCacheFound(cache);
   });
 
   // ---------- Scenarios ----------
@@ -888,11 +1006,14 @@
         renderRadar();
         break;
       case "found":
-        cache.found = !cache.found;
-        state.caches = CacheStore.upsert(cache);
-        renderCacheList();
-        renderRadar();
-        if (cache.found) celebrateFound();
+        if (cache.found) {
+          cache.found = false;
+          state.caches = CacheStore.upsert(cache);
+          renderCacheList();
+          renderRadar();
+        } else {
+          markCacheFound(cache);
+        }
         break;
       case "edit":
         loadCacheIntoForm(cache);
@@ -1074,4 +1195,5 @@
   renderScenarioList();
   renderGmView();
   renderTrailList();
+  renderScoreboard();
 })();

@@ -89,3 +89,33 @@ const CustomTrailStore = (() => {
 
   return { loadAll, saveAll, upsert, remove, newId };
 })();
+
+// Score du quiz, propre à cet appareil : visible uniquement dans l'onglet
+// Maître du jeu (les joueurs ne le voient pas ailleurs dans l'app), avec
+// une réinitialisation manuelle une fois la partie terminée.
+const ScoreStore = (() => {
+  const KEY = "quiz_score_v1";
+  const DEFAULT_SCORE = { total: 0, correct: 0, incorrect: 0, usedQuestions: {} };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? { ...DEFAULT_SCORE, ...JSON.parse(raw) } : { ...DEFAULT_SCORE, usedQuestions: {} };
+    } catch (e) {
+      console.error("Failed to read score store", e);
+      return { ...DEFAULT_SCORE, usedQuestions: {} };
+    }
+  }
+
+  function save(score) {
+    localStorage.setItem(KEY, JSON.stringify(score));
+  }
+
+  function reset() {
+    const fresh = { total: 0, correct: 0, incorrect: 0, usedQuestions: {} };
+    save(fresh);
+    return fresh;
+  }
+
+  return { load, save, reset };
+})();

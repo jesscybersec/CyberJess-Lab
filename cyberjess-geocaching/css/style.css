@@ -635,4 +635,85 @@ button:active { transform: scale(.97); }
   background-size: 26px 26px;
 }
 
+/* Scoreboard (game master only) */
+.scoreboard-box { border-color: var(--accent); }
+
+.scoreboard-display {
+  text-align: center;
+  padding: .6rem 0;
+}
+
+.score-total {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Quiz modal */
+.quiz-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(6, 10, 8, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.quiz-box {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 1.2rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.quiz-progress {
+  font-size: .75rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: .5rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.quiz-question {
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.quiz-choices {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+.quiz-choices button {
+  text-align: left;
+  width: 100%;
+}
+
+.quiz-choice-correct {
+  background: #163a1a !important;
+  border-color: #7ee081 !important;
+  color: #7ee081 !important;
+}
+
+.quiz-choice-wrong {
+  background: #3a1616 !important;
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+.quiz-feedback {
+  text-align: center;
+  font-weight: bold;
+  margin: .8rem 0;
+}
+
 .hidden { display: none !important; }
