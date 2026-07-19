@@ -1,4 +1,4 @@
-const CACHE_NAME = "cyberjess-geocaching-v18";
+const CACHE_NAME = "cyberjess-geocaching-v19";
 const ASSETS = [
   "./",
   "./index.html",

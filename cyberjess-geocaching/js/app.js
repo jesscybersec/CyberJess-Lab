@@ -1,6 +1,12 @@
 (() => {
   const SCAN_RADIUS_METERS = 30;
 
+  // Elements (or containers, for delegated cases like the quiz's answer
+  // buttons) that already have their own explicit touchend fallback bound
+  // via bindTap() below -- the global touch-to-click bridge further down
+  // skips these so a real tap never runs the same action twice.
+  const touchBoundElements = new WeakSet();
+
   const state = {
     caches: CacheStore.loadAll(),
     trails: CustomTrailStore.loadAll(),
@@ -207,6 +213,7 @@
   // listener lives on the stable parent. touchend is bound the same way as
   // click (see bindTap) since some iOS browser wrappers can swallow the
   // derived click event in modals too, not just over the AR camera view.
+  touchBoundElements.add(quizChoicesEl);
   quizChoicesEl.addEventListener("click", handleQuizChoiceTap);
   quizChoicesEl.addEventListener(
     "touchend",
@@ -253,6 +260,38 @@
       renderScoreboard();
     }
   });
+
+  // ---------- Global touch-to-click bridge ----------
+  // Some iOS browser wrappers (reported on Chrome for iOS, first noticed
+  // over the AR scanner's live camera view, then again in the quiz modal
+  // and the radar's own action buttons) can swallow the derived click event
+  // from a real touch tap, even though the tapped element is visibly
+  // enabled and normal mouse clicks work fine everywhere. Rather than
+  // patching one more screen every time this surfaces somewhere new, every
+  // button-like element in the app gets a touchend fallback here: it
+  // synthesizes a genuine click via el.click() (which every existing click
+  // listener, delegated or direct, already handles correctly) instead of
+  // relying on the browser's own click synthesis. Elements that already
+  // bind their own explicit touchend handler (see bindTap and the quiz's
+  // delegated listener) are skipped via touchBoundElements, so a real tap
+  // never runs the same action twice.
+  function isTouchHandledElsewhere(el) {
+    for (let node = el; node; node = node.parentElement) {
+      if (touchBoundElements.has(node)) return true;
+    }
+    return false;
+  }
+  document.addEventListener(
+    "touchend",
+    (evt) => {
+      const target = evt.target.closest("button, [data-action], [data-tab]");
+      if (!target || target.disabled) return;
+      if (isTouchHandledElsewhere(target)) return;
+      evt.preventDefault();
+      target.click();
+    },
+    { passive: false }
+  );
 
   // ---------- Tabs ----------
   document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -734,6 +773,7 @@
   // workaround: it reaches the button via the raw touch event instead of
   // relying on the derived click event that can get lost in that scenario.
   function bindTap(el, handler) {
+    touchBoundElements.add(el);
     el.addEventListener("click", handler);
     el.addEventListener(
       "touchend",

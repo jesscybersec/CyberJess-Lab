@@ -206,13 +206,14 @@ pour aller toucher le curseur de l'onglet Radar (qui, lui, est caché
 derrière le scanner tant qu'il est ouvert).
 
 **Note technique** : sur certains navigateurs iOS (notamment Chrome pour
-iOS), un flux caméra `<video>` en direct peut parfois intercepter les
-appuis destinés aux boutons superposés par-dessus, même si l'affichage
-semble correct (le bouton a l'air normal, ni grisé ni couvert par autre
-chose) — c'est une particularité connue de WebKit. Les boutons du scanner
-(trouvé, fermer, cadran de rotation) répondent donc à la fois au clic
-classique et directement au toucher (`touchend`), pour rester utilisables
-même si le navigateur avale l'évènement clic dérivé.
+iOS), un appui tactile peut parfois ne jamais se traduire en évènement
+clic — que ce soit à cause d'un flux caméra `<video>` en direct qui
+intercepte les appuis destinés aux boutons superposés par-dessus, ou plus
+largement dans certaines fenêtres modales — même si l'affichage semble
+correct (le bouton a l'air normal, ni grisé ni couvert par autre chose).
+Toute l'app répond donc directement au toucher (`touchend`) en plus du
+clic classique, pas seulement le scanner caméra (voir la note dans la
+section "Quiz et tableau des scores" ci-dessous pour le détail).
 
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
@@ -238,11 +239,13 @@ personnalisé** (que ce soit via la liste des caches ou via le scan caméra),
   associé) ne déclenchent pas de quiz — il n'y a pas de niveau à leur
   associer.
 
-Comme les boutons du scanner caméra, les boutons du quiz (réponses,
-"Question suivante", "Passer le quiz") répondent à la fois au clic
-classique et directement au toucher (`touchend`), pour la même raison :
-certains navigateurs iOS peuvent, dans de rares cas, avaler l'évènement
-clic dérivé d'un appui tactile dans une fenêtre modale.
+Comme évoqué dans la section "Scan caméra" : sur certains navigateurs iOS,
+un appui tactile peut ne jamais déclencher d'évènement clic. Plutôt que de
+corriger un écran à la fois à chaque fois que ça arrive, **toute
+l'application** répond directement au toucher (`touchend`), en plus du
+clic classique — boutons du quiz, du scanner caméra, de la simulation, des
+onglets, etc. — via un même mécanisme central, pour que ce genre de souci
+ne se reproduise plus nulle part dans l'app.
 
 Le score cumulé est **visible uniquement dans l'onglet 🎓 Maître du jeu**,
 sous la liste des trajets : les joueurs ne le voient nulle part ailleurs
