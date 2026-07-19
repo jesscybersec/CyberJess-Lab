@@ -171,6 +171,16 @@ inattendue survient dans le scanner, un message s'affiche aussi
 automatiquement (au lieu de laisser l'écran figé sans explication) et le
 bouton "trouvé" reste utilisable pour ne jamais bloquer la partie.
 
+La permission d'accès à la boussole (nécessaire sur iOS 13+) est demandée
+automatiquement dès l'ouverture du scanner, en plus du petit bouton
+**"Activer la boussole"** dans l'onglet Radar — donc pas besoin de l'avoir
+repéré au préalable. Et si le **mode simulation** est actif sans qu'aucune
+vraie boussole ne réponde (permission refusée, ou test sur un appareil sans
+capteur), un petit cadran **"Tourner ⟲ / ⟳"** apparaît directement dans le
+scanner : il permet de faire pivoter le cap simulé sans avoir à sortir du
+plein écran pour aller toucher le curseur de l'onglet Radar (qui, lui, est
+caché derrière le scanner tant qu'il est ouvert).
+
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
 dans le formulaire de checkpoint du mode Maître du jeu.

@@ -352,19 +352,42 @@
     state.orientationEnabled = true;
   }
 
+  // Requests the iOS 13+ motion/orientation permission if not already granted.
+  // Must run directly inside a user-gesture handler (a click) — both the
+  // small "Activer la boussole" button in the Radar tab AND the AR scan
+  // button itself call this, so the prompt also appears right when the
+  // search actually needs it, instead of relying solely on a button a player
+  // testing via simulation might never notice or think to tap.
+  let orientationPermissionState = "unrequested"; // "unrequested" | "granted" | "denied" | "unsupported"
+  async function ensureOrientationPermission() {
+    if (typeof DeviceOrientationEvent === "undefined") {
+      orientationPermissionState = "unsupported";
+      return orientationPermissionState;
+    }
+    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+      // Android and most non-iOS browsers don't gate this behind a prompt.
+      if (!state.orientationEnabled) startOrientation();
+      orientationPermissionState = "granted";
+      return orientationPermissionState;
+    }
+    if (orientationPermissionState === "granted") return orientationPermissionState;
+    try {
+      const result = await DeviceOrientationEvent.requestPermission();
+      orientationPermissionState = result; // "granted" or "denied"
+      if (result === "granted") {
+        startOrientation();
+        enableOrientationBtn.classList.add("hidden");
+      }
+    } catch (e) {
+      console.error(e);
+      orientationPermissionState = "denied";
+    }
+    return orientationPermissionState;
+  }
+
   if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
     enableOrientationBtn.classList.remove("hidden");
-    enableOrientationBtn.addEventListener("click", async () => {
-      try {
-        const result = await DeviceOrientationEvent.requestPermission();
-        if (result === "granted") {
-          startOrientation();
-          enableOrientationBtn.classList.add("hidden");
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    });
+    enableOrientationBtn.addEventListener("click", ensureOrientationPermission);
   } else if (typeof DeviceOrientationEvent !== "undefined") {
     startOrientation();
   }
@@ -639,6 +662,20 @@
   const arErrorEl = document.getElementById("arError");
   const arFoundBtnEl = document.getElementById("arFoundBtn");
   const arDebugReadoutEl = document.getElementById("arDebugReadout");
+  const arSimHeadingControlsEl = document.getElementById("arSimHeadingControls");
+  const arSimHeadingLabelEl = document.getElementById("arSimHeadingLabel");
+  const arHeadingLeftBtn = document.getElementById("arHeadingLeftBtn");
+  const arHeadingRightBtn = document.getElementById("arHeadingRightBtn");
+
+  function nudgeSimHeading(delta) {
+    const base = state.heading !== null ? state.heading : 0;
+    state.heading = (base + delta + 360) % 360;
+    arSimHeadingLabelEl.textContent = Math.round(state.heading) + "°";
+    if (simHeadingSliderEl) simHeadingSliderEl.value = state.heading;
+    if (simHeadingValueEl) simHeadingValueEl.textContent = Math.round(state.heading) + "°";
+  }
+  arHeadingLeftBtn.addEventListener("click", () => nudgeSimHeading(-15));
+  arHeadingRightBtn.addEventListener("click", () => nudgeSimHeading(15));
 
   function setArFoundLocked(locked) {
     arFoundBtnEl.disabled = locked;
@@ -671,6 +708,13 @@
     // at all, so it falls back to being immediately usable.
     setArFoundLocked(true);
     resizeArCanvas();
+
+    // Ask for the compass permission right when it's actually needed, from
+    // this same click gesture — a player testing via simulation, or anyone
+    // who missed the small "Activer la boussole" button in the Radar tab,
+    // still gets prompted at the moment the search starts.
+    await ensureOrientationPermission();
+    if (state.simulation.active && state.heading === null) state.heading = 0;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -761,6 +805,15 @@
         arDebugReadoutEl.textContent = hasHeading
           ? `🧭 ${Math.round(currentHeading)}° → 🎯 ${Math.round(state.scanner.objectBearing)}° (${source})`
           : "🧭 aucune donnée de boussole";
+
+        // While simulating and no real phone rotation is driving the search
+        // (no live sensor category won the lock this frame), show a mini
+        // heading dial right inside the scanner so the object can still be
+        // found without leaving this fullscreen view to reach the Radar
+        // tab's slider, which is hidden behind the scanner while it's open.
+        const showSimHeadingControls = state.simulation.active && source === "simulation";
+        arSimHeadingControlsEl.classList.toggle("hidden", !showSimHeadingControls);
+        if (showSimHeadingControls) arSimHeadingLabelEl.textContent = Math.round(currentHeading) + "°";
 
         // The "found" button only unlocks once the object has actually been
         // spotted in frame (unless there's no camera/heading to search with

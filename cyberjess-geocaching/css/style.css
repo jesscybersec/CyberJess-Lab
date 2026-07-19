@@ -582,6 +582,34 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
   text-align: center;
 }
 
+.ar-sim-heading-controls {
+  background: rgba(13, 17, 23, 0.85);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: .6rem .8rem;
+  margin: 0 auto .6rem;
+  max-width: 22rem;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.ar-sim-heading-controls p.muted {
+  margin: 0 0 .4rem;
+  font-size: .75rem;
+}
+
+.ar-sim-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+}
+
+.ar-sim-heading-label {
+  font-family: var(--font-mono);
+  min-width: 3.5rem;
+}
+
 .ar-actions {
   display: flex;
   gap: .6rem;
