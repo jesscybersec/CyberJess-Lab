@@ -734,15 +734,19 @@
     // at all, so it falls back to being immediately usable.
     setArFoundLocked(true);
     resizeArCanvas();
+    arDebugReadoutEl.textContent = "🧭 Demande d'accès à la boussole…";
 
     // Ask for the compass permission right when it's actually needed, from
     // this same click gesture — a player testing via simulation, or anyone
     // who missed the small "Activer la boussole" button in the Radar tab,
-    // still gets prompted at the moment the search starts. Deliberately NOT
-    // awaited: the scanner (camera + fallback search) must open immediately
-    // either way and never sit blocked on a permission prompt that, on some
-    // iOS setups, can fail to appear at all.
-    ensureOrientationPermission();
+    // still gets prompted at the moment the search starts. This IS awaited,
+    // before the camera/search become interactive: a native permission
+    // dialog left open while the player starts tapping "found"/"close" can
+    // silently swallow those taps, so it must be fully resolved first. It's
+    // still bounded by a timeout inside ensureOrientationPermission, so a
+    // prompt that fails to appear at all (a known issue on some iOS setups)
+    // can never leave the scanner stuck — worst case a few seconds' wait.
+    await ensureOrientationPermission();
     if (state.simulation.active && state.heading === null) state.heading = 0;
 
     try {
