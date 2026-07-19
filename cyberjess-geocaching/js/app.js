@@ -9,6 +9,7 @@
     heading: null, // degrees, 0 = north — falls back to the simulated slider when no real compass exists
     realHeading: null, // degrees from the actual device compass, always tracked so a real phone's
     // rotation works for the AR search even while position is being simulated
+    hasAbsoluteHeading: false, // true once a genuine true-north reading has ever been seen
     tiltBeta: null, // device front-back tilt, used for AR parallax
     tiltGamma: null, // device left-right tilt, used for AR parallax
     targetId: null,
@@ -287,12 +288,26 @@
     if (evt.beta !== null) state.tiltBeta = evt.beta;
     if (evt.gamma !== null) state.tiltGamma = evt.gamma;
 
-    let heading = evt.webkitCompassHeading; // iOS Safari, already 0=north clockwise
-    if (heading === undefined || heading === null) {
-      if (evt.alpha === null) return;
-      heading = 360 - evt.alpha; // approximate for absolute orientation on other browsers
+    if (typeof evt.webkitCompassHeading === "number") {
+      // iOS Safari: always a true, north-referenced compass heading.
+      state.realHeading = evt.webkitCompassHeading;
+      state.hasAbsoluteHeading = true;
+      renderRadar();
+      return;
     }
-    state.realHeading = heading;
+
+    if (evt.alpha === null) return;
+    const isAbsolute = evt.absolute === true || evt.type === "deviceorientationabsolute";
+    // A plain "deviceorientation" event without absolute=true is relative to
+    // whatever direction the phone happened to face when the listener was
+    // attached, NOT true north — treating it as a compass bearing would make
+    // the AR search bearing unsolvable no matter how the phone is rotated.
+    // Once we've ever seen a genuine absolute reading, ignore non-absolute
+    // ones entirely so they can't clobber it; only fall back to them if the
+    // device never reports absolute data at all.
+    if (!isAbsolute && state.hasAbsoluteHeading) return;
+    state.realHeading = (360 - evt.alpha + 360) % 360;
+    if (isAbsolute) state.hasAbsoluteHeading = true;
     renderRadar();
   }
 
@@ -596,6 +611,7 @@
   const arSearchHintEl = document.getElementById("arSearchHint");
   const arErrorEl = document.getElementById("arError");
   const arFoundBtnEl = document.getElementById("arFoundBtn");
+  const arDebugReadoutEl = document.getElementById("arDebugReadout");
 
   function setArFoundLocked(locked) {
     arFoundBtnEl.disabled = locked;
@@ -669,6 +685,16 @@
       const hasHeading = currentHeading !== null;
       const diff = hasHeading ? signedAngleDiff(currentHeading, state.scanner.objectBearing) : 0;
       const inView = !hasHeading || Math.abs(diff) <= halfFov;
+
+      // Visible diagnostic readout — makes any future compass-sourcing issue
+      // (e.g. relative vs. true-north heading) immediately obvious on-device
+      // instead of requiring remote back-and-forth to debug.
+      const source = state.realHeading !== null
+        ? (state.hasAbsoluteHeading ? "boussole" : "boussole non calibrée")
+        : "simulation";
+      arDebugReadoutEl.textContent = hasHeading
+        ? `🧭 ${Math.round(currentHeading)}° → 🎯 ${Math.round(state.scanner.objectBearing)}° (${source})`
+        : "🧭 aucune donnée de boussole";
 
       // The "found" button only unlocks once the object has actually been
       // spotted in frame (unless there's no camera/heading to search with

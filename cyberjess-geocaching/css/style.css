@@ -555,6 +555,16 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
   text-align: center;
 }
 
+.ar-debug-readout {
+  background: rgba(13, 17, 23, 0.6);
+  color: var(--muted);
+  padding: .25rem .8rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-family: monospace;
+  text-align: center;
+}
+
 .ar-error {
   background: rgba(42, 13, 13, 0.9);
   border: 1px solid var(--danger);
