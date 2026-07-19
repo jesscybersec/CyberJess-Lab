@@ -171,6 +171,16 @@ inattendue survient dans le scanner, un message s'affiche aussi
 automatiquement (au lieu de laisser l'écran figé sans explication) et le
 bouton "trouvé" reste utilisable pour ne jamais bloquer la partie.
 
+**Particularité iOS** : `webkitCompassHeading` peut valoir **-1** (une
+valeur documentée par Apple) quand la boussole n'est pas encore calibrée,
+et non `null` comme on pourrait s'y attendre — cette valeur est ignorée
+explicitement, sinon elle se faisait passer pour une vraie lecture et
+bloquait la recherche indéfiniment sur un cap sans aucun sens (impossible
+à corriger même avec le cadran de simulation). Si la boussole d'un
+téléphone n'a jamais été calibrée, il suffit généralement de la faire
+"faire un 8" dans les airs, ou d'utiliser le cadran de simulation en
+attendant.
+
 La permission d'accès à la boussole (nécessaire sur iOS 13+) est demandée
 automatiquement dès l'ouverture du scanner, en plus du petit bouton
 **"Activer la boussole"** dans l'onglet Radar — donc pas besoin de l'avoir

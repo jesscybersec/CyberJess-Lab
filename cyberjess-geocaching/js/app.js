@@ -307,11 +307,26 @@
 
     const now = performance.now();
 
-    if (typeof evt.webkitCompassHeading === "number") {
-      // iOS Safari: always a true, north-referenced compass heading.
-      state.webkitHeading = evt.webkitCompassHeading;
-      state.headingUpdatedAt.webkit = now;
-      renderRadar();
+    // iOS Safari: webkitCompassHeading is a true, north-referenced compass
+    // heading -- EXCEPT it reports the sentinel value -1 (per Apple's own
+    // docs) when the heading genuinely can't be determined yet (compass not
+    // calibrated). That's a valid `number` and was being treated as real
+    // data, permanently locking the AR search onto a frozen, meaningless
+    // heading forever (since it kept refreshing its own "fresh" timestamp
+    // every event) and making both real rotation and the simulation dial
+    // powerless to ever bring the object into view.
+    if ("webkitCompassHeading" in evt) {
+      if (typeof evt.webkitCompassHeading === "number" && evt.webkitCompassHeading >= 0) {
+        state.webkitHeading = evt.webkitCompassHeading;
+        state.headingUpdatedAt.webkit = now;
+        renderRadar();
+      }
+      // Deliberately not falling through to alpha/absolute below: on iOS,
+      // alpha comes from the same sensor-fusion pipeline as
+      // webkitCompassHeading, so if THAT says the heading is unknown, alpha
+      // from this same event isn't a trustworthy independent signal either
+      // -- unlike Android, where plain deviceorientation is a genuinely
+      // separate, gyro-only source worth using as a fallback.
       return;
     }
 
