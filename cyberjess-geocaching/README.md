@@ -205,6 +205,15 @@ permet de faire pivoter le cap simulé sans avoir à sortir du plein écran
 pour aller toucher le curseur de l'onglet Radar (qui, lui, est caché
 derrière le scanner tant qu'il est ouvert).
 
+**Note technique** : sur certains navigateurs iOS (notamment Chrome pour
+iOS), un flux caméra `<video>` en direct peut parfois intercepter les
+appuis destinés aux boutons superposés par-dessus, même si l'affichage
+semble correct (le bouton a l'air normal, ni grisé ni couvert par autre
+chose) — c'est une particularité connue de WebKit. Les boutons du scanner
+(trouvé, fermer, cadran de rotation) répondent donc à la fois au clic
+classique et directement au toucher (`touchend`), pour rester utilisables
+même si le navigateur avale l'évènement clic dérivé.
+
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
 dans le formulaire de checkpoint du mode Maître du jeu.
@@ -310,6 +319,13 @@ vraie boussole qui garde la main sur la recherche.
 téléchargée et installée. Ensuite seulement, elle fonctionne sans aucun
 réseau. Il n'y a pas de compte à créer, pas d'app store : tout se passe dans
 le navigateur.
+
+**Sur iPhone/iPad, utilise Safari** plutôt que Chrome ou un autre
+navigateur : tous les navigateurs iOS reposent sur le même moteur WebKit
+imposé par Apple, mais Safari est celui qui a le support le plus complet
+et le mieux testé des fonctionnalités utilisées ici (capteurs
+d'orientation, caméra, installation à l'écran d'accueil). D'autres
+navigateurs iOS peuvent fonctionner, mais avec des limitations connues.
 
 Trois façons d'obtenir un lien à ouvrir sur le téléphone :
 
