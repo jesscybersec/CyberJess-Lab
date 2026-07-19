@@ -709,6 +709,28 @@
   const arHeadingLeftBtn = document.getElementById("arHeadingLeftBtn");
   const arHeadingRightBtn = document.getElementById("arHeadingRightBtn");
 
+  // A <video> element showing a live camera stream can, on some iOS WebKit
+  // wrappers (reported specifically on Chrome for iOS), swallow touch events
+  // meant for buttons layered on top of it -- the DOM stacking looks correct
+  // and the button visibly looks enabled, but taps produce no reaction at
+  // all, not even a press effect. Binding directly to touchend (and calling
+  // preventDefault so the browser doesn't also fire a synthetic click
+  // afterward and double-run the handler) is the standard, well-established
+  // workaround: it reaches the button via the raw touch event instead of
+  // relying on the derived click event that can get lost in that scenario.
+  function bindTap(el, handler) {
+    el.addEventListener("click", handler);
+    el.addEventListener(
+      "touchend",
+      (evt) => {
+        evt.preventDefault();
+        if (el.disabled) return; // respect the same locked/disabled state as a normal click would
+        handler(evt);
+      },
+      { passive: false }
+    );
+  }
+
   function nudgeSimHeading(delta) {
     const base = state.heading !== null ? state.heading : 0;
     state.heading = (base + delta + 360) % 360;
@@ -716,8 +738,8 @@
     if (simHeadingSliderEl) simHeadingSliderEl.value = state.heading;
     if (simHeadingValueEl) simHeadingValueEl.textContent = Math.round(state.heading) + "°";
   }
-  arHeadingLeftBtn.addEventListener("click", () => nudgeSimHeading(-15));
-  arHeadingRightBtn.addEventListener("click", () => nudgeSimHeading(15));
+  bindTap(arHeadingLeftBtn, () => nudgeSimHeading(-15));
+  bindTap(arHeadingRightBtn, () => nudgeSimHeading(15));
 
   function setArFoundLocked(locked) {
     arFoundBtnEl.disabled = locked;
@@ -952,9 +974,9 @@
     if (!arScannerEl.classList.contains("hidden")) resizeArCanvas();
   });
 
-  document.getElementById("arCloseBtn").addEventListener("click", closeScanner);
+  bindTap(document.getElementById("arCloseBtn"), closeScanner);
 
-  document.getElementById("arFoundBtn").addEventListener("click", () => {
+  bindTap(document.getElementById("arFoundBtn"), () => {
     const cacheId = state.scanner.cacheId;
     const cache = state.caches.find((c) => c.id === cacheId);
     closeScanner();
