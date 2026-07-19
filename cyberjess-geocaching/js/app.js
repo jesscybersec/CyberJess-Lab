@@ -6,7 +6,9 @@
     trails: CustomTrailStore.loadAll(),
     position: null, // {lat, lon, accuracy} — effective position, real or simulated
     lastRealPosition: null, // last position reported by the real GPS, kept even while simulating
-    heading: null, // degrees, 0 = north
+    heading: null, // degrees, 0 = north — falls back to the simulated slider when no real compass exists
+    realHeading: null, // degrees from the actual device compass, always tracked so a real phone's
+    // rotation works for the AR search even while position is being simulated
     tiltBeta: null, // device front-back tilt, used for AR parallax
     tiltGamma: null, // device left-right tilt, used for AR parallax
     targetId: null,
@@ -279,7 +281,9 @@
   const enableOrientationBtn = document.getElementById("enableOrientationBtn");
 
   function handleOrientation(evt) {
-    if (state.simulation.active) return; // simulated heading takes over
+    // Always tracked, even while position is simulated: a real phone's own
+    // rotation must still work for the AR search and the compass — only a
+    // desktop/no-sensor test session should ever need the simulated slider.
     if (evt.beta !== null) state.tiltBeta = evt.beta;
     if (evt.gamma !== null) state.tiltGamma = evt.gamma;
 
@@ -288,8 +292,16 @@
       if (evt.alpha === null) return;
       heading = 360 - evt.alpha; // approximate for absolute orientation on other browsers
     }
-    state.heading = heading;
+    state.realHeading = heading;
     renderRadar();
+  }
+
+  // The heading actually used everywhere: prefer the real compass whenever
+  // it's reporting anything at all, and only fall back to the simulated
+  // slider's value when there's no real sensor data (e.g. testing on a
+  // laptop with no orientation support).
+  function getEffectiveHeading() {
+    return state.realHeading !== null ? state.realHeading : state.heading;
   }
 
   function startOrientation() {
@@ -513,15 +525,16 @@
     );
 
     // If we have a heading, point relative to device facing; otherwise point relative to true north.
+    const effectiveHeading = getEffectiveHeading();
     const arrowAngle =
-      state.heading !== null ? (bearingToTarget - state.heading + 360) % 360 : bearingToTarget;
+      effectiveHeading !== null ? (bearingToTarget - effectiveHeading + 360) % 360 : bearingToTarget;
     drawArrow(arrowAngle);
 
     radarInfoEl.innerHTML = `
       <div class="target-name">🎯 ${escapeHtml(target.name)}</div>
       <div class="target-distance">${Geo.formatDistance(distance)}</div>
       <div class="muted">cap: ${Math.round(bearingToTarget)}°${
-      state.heading === null ? " (boussole non calibrée — cap par rapport au nord)" : ""
+      effectiveHeading === null ? " (boussole non calibrée — cap par rapport au nord)" : ""
     }</div>
       ${renderScanGate(target, distance)}
     `;
@@ -582,6 +595,12 @@
   const arObjectLabelEl = document.getElementById("arObjectLabel");
   const arSearchHintEl = document.getElementById("arSearchHint");
   const arErrorEl = document.getElementById("arError");
+  const arFoundBtnEl = document.getElementById("arFoundBtn");
+
+  function setArFoundLocked(locked) {
+    arFoundBtnEl.disabled = locked;
+    arFoundBtnEl.textContent = locked ? "🔒 Cherche encore l'objet…" : "✅ J'ai trouvé l'objet !";
+  }
 
   // Smallest signed angle to rotate `from` by to reach `to`, in (-180, 180].
   function signedAngleDiff(from, to) {
@@ -603,6 +622,10 @@
     arSearchHintEl.classList.add("hidden");
     arErrorEl.classList.add("hidden");
     arScannerEl.classList.remove("hidden");
+    // Locked until the object is actually spotted in frame — unless the
+    // camera itself fails to start, in which case there's no way to search
+    // at all, so it falls back to being immediately usable.
+    setArFoundLocked(true);
     resizeArCanvas();
 
     try {
@@ -616,6 +639,7 @@
       arErrorEl.textContent =
         "Caméra indisponible (" + e.message + "). Tu peux quand même marquer la cache comme trouvée.";
       arErrorEl.classList.remove("hidden");
+      setArFoundLocked(false);
     }
 
     runArLoop(obj);
@@ -638,10 +662,18 @@
 
       // Without any heading (no compass permission, not simulating), we
       // can't gate by direction — fall back to always-visible so the
-      // feature still works, just without the search mechanic.
-      const hasHeading = state.heading !== null;
-      const diff = hasHeading ? signedAngleDiff(state.heading, state.scanner.objectBearing) : 0;
+      // feature still works, just without the search mechanic. Prefers the
+      // real device compass over the simulated one, so a real phone's
+      // rotation always works here even while position is being simulated.
+      const currentHeading = getEffectiveHeading();
+      const hasHeading = currentHeading !== null;
+      const diff = hasHeading ? signedAngleDiff(currentHeading, state.scanner.objectBearing) : 0;
       const inView = !hasHeading || Math.abs(diff) <= halfFov;
+
+      // The "found" button only unlocks once the object has actually been
+      // spotted in frame (unless there's no camera/heading to search with
+      // at all, handled by openScanner's catch and the !hasHeading case).
+      setArFoundLocked(!inView);
 
       if (inView) {
         arSearchHintEl.classList.add("hidden");
@@ -688,6 +720,7 @@
     state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null };
     arVideoEl.srcObject = null;
     arScannerEl.classList.add("hidden");
+    setArFoundLocked(false);
   }
 
   window.addEventListener("resize", () => {

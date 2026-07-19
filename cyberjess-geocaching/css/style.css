@@ -305,6 +305,7 @@ button {
 }
 
 button:active { transform: scale(.97); }
+button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
 .btn-primary {
   background: var(--accent-dim);
