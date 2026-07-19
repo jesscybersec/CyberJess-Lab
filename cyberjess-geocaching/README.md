@@ -126,11 +126,15 @@ l'appuyant, la caméra arrière s'ouvre en plein écran et il faut vraiment
   direction où tourner (**⬅️ /➡️**) et une température (« tu chauffes »,
   « tu te réchauffes… », « c'est encore loin… ») pour guider la recherche
   sans la rendre frustrante.
-- Une fois l'objet dans le champ, il flotte en surimpression du flux
-  caméra avec un léger effet de profondeur qui réagit aux mouvements du
-  téléphone, et le bouton **"✅ J'ai trouvé l'objet !"** se déverrouille —
-  il reste grisé (🔒 Cherche encore l'objet…) tant que l'objet n'a pas été
-  repéré, pour que ce soit une vraie recherche et pas juste une formalité.
+- Une fois l'objet dans le champ, l'image se **fige comme une photo**
+  (comme un instantané capturé) et le bouton **"✅ J'ai trouvé l'objet !"**
+  se déverrouille — un message **"📸 Objet capturé !"** confirme qu'il n'y
+  a plus qu'à appuyer sur ce bouton pour passer à la prochaine cache.
+  Il reste grisé (🔒 Cherche encore l'objet…) tant que l'objet n'a pas été
+  repéré, pour que ce soit une vraie recherche et pas juste une formalité,
+  et une fois figée, l'image reste stable même si le téléphone bouge
+  ensuite — pas besoin de rester parfaitement immobile en attendant
+  d'appuyer sur le bouton.
 
 **Important à savoir sur cette réalité augmentée légère** : cette recherche
 repose sur le cap de la vraie boussole du téléphone — celle-ci a toujours
@@ -288,6 +292,16 @@ la même position utilisée partout ailleurs dans l'app, les boutons
 "Utiliser ma position GPS actuelle" (formulaire d'ajout, lancement de
 scénario, checkpoint du mode Maître du jeu) utilisent aussi la position
 simulée tant qu'elle est active.
+
+**Important pour tester le scan caméra en simulation** : une vraie
+lecture de boussole (via le bouton "Activer la boussole" ou dès qu'un
+capteur d'orientation répond) garde **toujours la priorité** sur le
+curseur/cadran de cap simulé, même en pleine simulation — c'est voulu
+(voir la section "Scan caméra" plus haut), mais ça veut dire que si tu
+n'as pas l'intention de tourner physiquement le téléphone, il vaut mieux
+**ne pas activer la boussole** avant de tester : sinon le cadran de
+simulation à l'intérieur du scanner n'aura aucun effet, puisque c'est la
+vraie boussole qui garde la main sur la recherche.
 
 ## Installation sur un téléphone
 
