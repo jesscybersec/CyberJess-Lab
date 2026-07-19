@@ -1431,11 +1431,38 @@
   });
 
   // ---------- Service worker ----------
+  // Without this, a tab/PWA instance left open from before a deploy keeps
+  // running the old JS entirely from memory forever — the new service
+  // worker installs and activates in the background (skipWaiting +
+  // clients.claim already handle that), but nothing tells the already-
+  // loaded page to actually pick it up. Reloading once when a new worker
+  // takes control is what makes updates actually reach an open tab.
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("service-worker.js").catch((e) => console.error("SW registration failed", e));
     });
+
+    let swRefreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      window.location.reload();
+    });
   }
+
+  document.getElementById("checkUpdateBtn").addEventListener("click", async () => {
+    if (!("serviceWorker" in navigator)) {
+      alert("Ce navigateur ne supporte pas les mises à jour automatiques de l'app.");
+      return;
+    }
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      alert("Aucune version installée pour l'instant — recharge la page une première fois avec une connexion.");
+      return;
+    }
+    await reg.update();
+    alert("Vérification lancée. S'il y a une nouvelle version, l'app va se recharger automatiquement dans quelques secondes.");
+  });
 
   // ---------- Init ----------
   renderCacheList();

@@ -402,9 +402,16 @@ Dans l'onglet **💾 Données** :
   se repérant au soleil.
 - **Impossible d'ajouter l'app à l'écran d'accueil sur iPhone** : elle doit
   être ouverte avec Safari, pas un autre navigateur.
-- **L'app semble "figée" après une mise à jour du contenu** : rouvre-la une
-  fois connectée au réseau pour que le service worker récupère la nouvelle
-  version.
+- **Après une mise à jour, un bouton ne réagit plus du tout (aucune erreur,
+  juste rien ne se passe)** : c'est le signe classique d'un onglet resté
+  ouvert depuis avant la mise à jour, qui continue de faire tourner
+  l'ancien code en mémoire — le service worker installe la nouvelle
+  version en arrière-plan, mais rien ne force l'onglet déjà ouvert à la
+  charger tant qu'il n'est pas rechargé. Avec une connexion active, va
+  dans **💾 Données** et appuie sur **"🔄 Vérifier les mises à jour"** :
+  l'app se recharge automatiquement si une nouvelle version est trouvée.
+  Si le bouton lui-même semble ne rien faire, ferme complètement l'onglet
+  (ou l'app installée) et rouvre le lien à neuf.
 - **Le bouton "Scanner la zone" n'apparaît pas** : il ne s'affiche que si le
   checkpoint ciblé a un objet virtuel assigné et que tu es à moins de 30 m
   (la distance restante est affichée en attendant).
