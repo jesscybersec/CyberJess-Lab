@@ -151,21 +151,25 @@ disponible (permission refusée, appareil sans caméra), un message
 s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable, puisqu'il
 n'y a alors aucun moyen de chercher visuellement.
 
-L'app privilégie un cap **réellement référencé au nord** (fourni par
-`webkitCompassHeading` sur iOS, ou par un évènement marqué
-`absolute: true`/`deviceorientationabsolute` sur Android/Chrome) : tant que
-ce type de lecture arrive activement (dans la dernière seconde), les
-lectures non-absolues concurrentes (qui ne représentent qu'une rotation
-relative à la position de départ du téléphone, pas un vrai cap boussole)
-sont ignorées pour ne pas "écraser" la bonne valeur par une fausse. Mais
-dès que les lectures absolues s'arrêtent ou restent bloquées (boussole mal
-calibrée sur certains appareils), l'app se rabat automatiquement sur le
-cap relatif pour que la rotation du téléphone continue toujours à faire
-quelque chose, plutôt que de rester figée indéfiniment sur une seule
-mauvaise lecture. Un petit indicateur discret
+L'app garde séparément la dernière valeur de chaque source de cap possible
+(boussole vraie `webkitCompassHeading` sur iOS, évènement marqué
+`absolute: true`/`deviceorientationabsolute` sur Android/Chrome, et
+orientation relative simple) au lieu de les mélanger dans une seule
+variable partagée — les mélanger, c'est ce qui causait un blocage ou un
+scintillement de l'objet sur certains téléphones qui envoient plusieurs de
+ces signaux en même temps. À l'ouverture du scanner, l'app choisit **une
+seule source pour toute la session de recherche** (en priorité : boussole
+vraie, puis cap absolu, puis cap relatif) et n'en change que si cette
+source précise s'arrête de répondre pendant plus d'une seconde — ce qui
+évite à la fois le figement permanent sur une mauvaise lecture et le
+clignotement causé par des sources concurrentes qui ne pointent pas dans
+la même direction de référence. Un petit indicateur discret
 (`🧭 143° → 🎯 210° (boussole)` ou `(boussole non calibrée)`) est affiché en
-haut du scanner caméra, juste pour diagnostiquer facilement un souci de
-boussole sur un appareil donné si jamais l'objet reste introuvable.
+haut du scanner caméra pour diagnostiquer facilement un souci de boussole
+sur un appareil donné si jamais l'objet reste introuvable ; si une erreur
+inattendue survient dans le scanner, un message s'affiche aussi
+automatiquement (au lieu de laisser l'écran figé sans explication) et le
+bouton "trouvé" reste utilisable pour ne jamais bloquer la partie.
 
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que

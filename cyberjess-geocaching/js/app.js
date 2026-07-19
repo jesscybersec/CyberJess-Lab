@@ -7,15 +7,28 @@
     position: null, // {lat, lon, accuracy} — effective position, real or simulated
     lastRealPosition: null, // last position reported by the real GPS, kept even while simulating
     heading: null, // degrees, 0 = north — falls back to the simulated slider when no real compass exists
-    realHeading: null, // degrees from the actual device compass, always tracked so a real phone's
-    // rotation works for the AR search even while position is being simulated
-    lastAbsoluteHeadingAt: null, // timestamp of the last true-north reading, or null if none yet
+    // Real device orientation is tracked per source, independently, instead of merged into a
+    // single mutable value: mixing sources into one variable is what caused the AR search to
+    // freeze or flicker on some phones (see git history). Each source keeps its own latest
+    // value + timestamp; the AR scanner locks onto ONE source per session (see openScanner) and
+    // only reconsiders that choice if its source goes quiet, so it never flip-flops mid-search.
+    webkitHeading: null, // iOS Safari's webkitCompassHeading — always true-north
+    absoluteHeading: null, // from deviceorientationabsolute / deviceorientation with absolute:true
+    relativeHeading: null, // from plain deviceorientation with no absolute flag — not true-north
+    headingUpdatedAt: { webkit: null, absolute: null, relative: null },
     tiltBeta: null, // device front-back tilt, used for AR parallax
     tiltGamma: null, // device left-right tilt, used for AR parallax
     targetId: null,
     orientationEnabled: false,
     recording: null, // in-progress custom trail: {id, title, ..., waypoints: []}
-    scanner: { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null },
+    scanner: {
+      stream: null,
+      cacheId: null,
+      rafId: null,
+      baselineBeta: null,
+      objectBearing: null,
+      headingCategory: null, // the locked heading source for the current scan session
+    },
     score: ScoreStore.load(),
     quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
     simulation: { active: false },
@@ -279,7 +292,10 @@
   }
 
   // ---------- Device orientation (compass heading) ----------
-  const ABSOLUTE_HEADING_FRESHNESS_MS = 1000;
+  // A source is considered stale (no longer "actively flowing") after this long
+  // with no update — used both to decide when the AR scanner should reconsider
+  // which source it's locked onto, and to warn in the debug readout.
+  const HEADING_STALE_MS = 1000;
   const enableOrientationBtn = document.getElementById("enableOrientationBtn");
 
   function handleOrientation(evt) {
@@ -289,41 +305,45 @@
     if (evt.beta !== null) state.tiltBeta = evt.beta;
     if (evt.gamma !== null) state.tiltGamma = evt.gamma;
 
+    const now = performance.now();
+
     if (typeof evt.webkitCompassHeading === "number") {
       // iOS Safari: always a true, north-referenced compass heading.
-      state.realHeading = evt.webkitCompassHeading;
-      state.lastAbsoluteHeadingAt = performance.now();
+      state.webkitHeading = evt.webkitCompassHeading;
+      state.headingUpdatedAt.webkit = now;
       renderRadar();
       return;
     }
 
     if (evt.alpha === null) return;
-    const isAbsolute = evt.absolute === true || evt.type === "deviceorientationabsolute";
-    const now = performance.now();
-    const absoluteIsFresh =
-      state.lastAbsoluteHeadingAt !== null && now - state.lastAbsoluteHeadingAt < ABSOLUTE_HEADING_FRESHNESS_MS;
     // A plain "deviceorientation" event without absolute=true is relative to
     // whatever direction the phone happened to face when the listener was
-    // attached, NOT true north — treating it as a compass bearing would make
-    // the AR search bearing unsolvable no matter how the phone is rotated.
-    // Ignore a non-absolute reading only while genuine absolute data is
-    // actively flowing (recency-based, not a permanent lock): this stops a
-    // stray relative sample interleaved with real compass data from
-    // clobbering it, but still self-heals and falls back to relative
-    // tracking if absolute data ever stops arriving or gets stuck, instead
-    // of freezing the heading forever on a single bad reading.
-    if (!isAbsolute && absoluteIsFresh) return;
-    state.realHeading = (360 - evt.alpha + 360) % 360;
-    if (isAbsolute) state.lastAbsoluteHeadingAt = now;
+    // attached, NOT true north. Each source (absolute vs. relative) keeps its
+    // own independent value — never merged into one shared variable — so one
+    // can never clobber or flicker against the other; the AR scanner picks
+    // which source to trust for a whole session (see openScanner/runArLoop).
+    const isAbsolute = evt.absolute === true || evt.type === "deviceorientationabsolute";
+    const value = (360 - evt.alpha + 360) % 360;
+    if (isAbsolute) {
+      state.absoluteHeading = value;
+      state.headingUpdatedAt.absolute = now;
+    } else {
+      state.relativeHeading = value;
+      state.headingUpdatedAt.relative = now;
+    }
     renderRadar();
   }
 
-  // The heading actually used everywhere: prefer the real compass whenever
-  // it's reporting anything at all, and only fall back to the simulated
-  // slider's value when there's no real sensor data (e.g. testing on a
-  // laptop with no orientation support).
+  // Whichever real source last reported data at all (regardless of staleness) —
+  // used outside the AR scanner (radar arrow, cap label) where session
+  // consistency doesn't matter, only showing the best available number now.
+  // Falls back to the simulated slider only when there's no real sensor data
+  // whatsoever (e.g. testing on a laptop with no orientation support).
   function getEffectiveHeading() {
-    return state.realHeading !== null ? state.realHeading : state.heading;
+    if (state.webkitHeading !== null) return state.webkitHeading;
+    if (state.absoluteHeading !== null) return state.absoluteHeading;
+    if (state.relativeHeading !== null) return state.relativeHeading;
+    return state.heading;
   }
 
   function startOrientation() {
@@ -636,6 +656,7 @@
 
     state.scanner.cacheId = cache.id;
     state.scanner.baselineBeta = state.tiltBeta;
+    state.scanner.headingCategory = null; // pick fresh for this session, see runArLoop
     // The object is "hidden" at a random compass bearing: with a real or
     // simulated heading available, finding it means physically panning the
     // camera around (or dragging the simulated heading slider) until it
@@ -673,6 +694,48 @@
     arCanvasEl.height = window.innerHeight;
   }
 
+  // Among the real (non-simulated) sources, pick whichever has reported data
+  // most recently, but only if that data isn't stale — used to choose (and,
+  // if it goes quiet, replace) the AR scanner's locked-in session source.
+  // Fixed priority order, NOT "most recently updated": a true-north source
+  // must always win over a relative one when both are actively flowing, even
+  // if a device happens to dispatch the relative event a few microseconds
+  // after the absolute one on every single sample (which would otherwise
+  // make "most recent" always pick the wrong, relative-only one forever).
+  function pickFreshRealHeadingCategory(now) {
+    const priority = ["webkit", "absolute", "relative"];
+    for (const category of priority) {
+      const t = state.headingUpdatedAt[category];
+      if (t !== null && now - t < HEADING_STALE_MS) return category;
+    }
+    return null;
+  }
+
+  // The AR search locks onto ONE heading source for the whole scan session
+  // (chosen the first time real data appears, or re-chosen only if that
+  // source goes quiet) instead of picking freshest-per-frame: two sources
+  // that are both actively updating can have different reference frames
+  // (true north vs. relative-to-startup), so switching between them frame to
+  // frame made the object flicker in and out unpredictably. Falls back to
+  // the simulated slider live (not locked) while no real data exists at all,
+  // and to "no heading" (always-visible) if nothing exists at all.
+  function getSessionHeading(now) {
+    const currentCategory = state.scanner.headingCategory;
+    const currentIsStale =
+      currentCategory !== null &&
+      (state.headingUpdatedAt[currentCategory] === null ||
+        now - state.headingUpdatedAt[currentCategory] >= HEADING_STALE_MS);
+    if (currentCategory === null || currentIsStale) {
+      state.scanner.headingCategory = pickFreshRealHeadingCategory(now);
+    }
+    const locked = state.scanner.headingCategory;
+    if (locked === "webkit") return { value: state.webkitHeading, source: "boussole" };
+    if (locked === "absolute") return { value: state.absoluteHeading, source: "boussole" };
+    if (locked === "relative") return { value: state.relativeHeading, source: "boussole non calibrée" };
+    if (state.heading !== null) return { value: state.heading, source: "simulation" };
+    return { value: null, source: null };
+  }
+
   function runArLoop(obj) {
     const cx = arCanvasEl.width / 2;
     const cy = arCanvasEl.height / 2;
@@ -681,67 +744,69 @@
 
     function frame(timestamp) {
       if (!state.scanner.cacheId) return; // scanner closed
-      arCtx.clearRect(0, 0, arCanvasEl.width, arCanvasEl.height);
 
-      // Without any heading (no compass permission, not simulating), we
-      // can't gate by direction — fall back to always-visible so the
-      // feature still works, just without the search mechanic. Prefers the
-      // real device compass over the simulated one, so a real phone's
-      // rotation always works here even while position is being simulated.
-      const currentHeading = getEffectiveHeading();
-      const hasHeading = currentHeading !== null;
-      const diff = hasHeading ? signedAngleDiff(currentHeading, state.scanner.objectBearing) : 0;
-      const inView = !hasHeading || Math.abs(diff) <= halfFov;
+      try {
+        arCtx.clearRect(0, 0, arCanvasEl.width, arCanvasEl.height);
 
-      // Visible diagnostic readout — makes any future compass-sourcing issue
-      // (e.g. relative vs. true-north heading) immediately obvious on-device
-      // instead of requiring remote back-and-forth to debug.
-      const absoluteIsFresh =
-        state.lastAbsoluteHeadingAt !== null &&
-        performance.now() - state.lastAbsoluteHeadingAt < ABSOLUTE_HEADING_FRESHNESS_MS;
-      const source = state.realHeading !== null
-        ? (absoluteIsFresh ? "boussole" : "boussole non calibrée")
-        : "simulation";
-      arDebugReadoutEl.textContent = hasHeading
-        ? `🧭 ${Math.round(currentHeading)}° → 🎯 ${Math.round(state.scanner.objectBearing)}° (${source})`
-        : "🧭 aucune donnée de boussole";
+        // Without any heading (no compass permission, not simulating), we
+        // can't gate by direction — fall back to always-visible so the
+        // feature still works, just without the search mechanic.
+        const { value: currentHeading, source } = getSessionHeading(performance.now());
+        const hasHeading = currentHeading !== null;
+        const diff = hasHeading ? signedAngleDiff(currentHeading, state.scanner.objectBearing) : 0;
+        const inView = !hasHeading || Math.abs(diff) <= halfFov;
 
-      // The "found" button only unlocks once the object has actually been
-      // spotted in frame (unless there's no camera/heading to search with
-      // at all, handled by openScanner's catch and the !hasHeading case).
-      setArFoundLocked(!inView);
+        // Visible diagnostic readout — makes any future compass-sourcing issue
+        // immediately obvious on-device instead of requiring remote back-and-forth to debug.
+        arDebugReadoutEl.textContent = hasHeading
+          ? `🧭 ${Math.round(currentHeading)}° → 🎯 ${Math.round(state.scanner.objectBearing)}° (${source})`
+          : "🧭 aucune donnée de boussole";
 
-      if (inView) {
-        arSearchHintEl.classList.add("hidden");
+        // The "found" button only unlocks once the object has actually been
+        // spotted in frame (unless there's no camera/heading to search with
+        // at all, handled by openScanner's catch and the !hasHeading case).
+        setArFoundLocked(!inView);
 
-        const gamma = state.tiltGamma || 0;
-        const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
-          ? state.tiltBeta - state.scanner.baselineBeta
-          : 0;
-        const bearingOffsetX = hasHeading ? (diff / halfFov) * maxOffset : 0;
-        const tiltOffsetX = Math.max(-30, Math.min(30, -gamma * 1.2));
-        const offsetY = Math.max(-50, Math.min(50, -betaDelta * 2));
-        const bob = Math.sin(timestamp / 500) * 10;
+        if (inView) {
+          arSearchHintEl.classList.add("hidden");
 
-        const x = cx + bearingOffsetX + tiltOffsetX;
-        const y = cy + offsetY + bob;
+          const gamma = state.tiltGamma || 0;
+          const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
+            ? state.tiltBeta - state.scanner.baselineBeta
+            : 0;
+          const bearingOffsetX = hasHeading ? (diff / halfFov) * maxOffset : 0;
+          const tiltOffsetX = Math.max(-30, Math.min(30, -gamma * 1.2));
+          const offsetY = Math.max(-50, Math.min(50, -betaDelta * 2));
+          const bob = Math.sin(timestamp / 500) * 10;
 
-        arCtx.save();
-        arCtx.shadowColor = obj.color;
-        arCtx.shadowBlur = 35;
-        arCtx.font = "72px 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
-        arCtx.textAlign = "center";
-        arCtx.textBaseline = "middle";
-        arCtx.fillText(obj.emoji, x, y);
-        arCtx.restore();
-      } else {
-        const turnRight = diff > 0;
-        const distance = Math.abs(diff);
-        const arrow = turnRight ? "➡️" : "⬅️";
-        const dirText = turnRight ? "Tourne à droite" : "Tourne à gauche";
-        const tempText = distance < halfFov + 20 ? "tu chauffes !" : distance < 100 ? "tu te réchauffes…" : "c'est encore loin…";
-        arSearchHintEl.textContent = `${arrow} ${dirText} — ${tempText}`;
-        arSearchHintEl.classList.remove("hidden");
+          const x = cx + bearingOffsetX + tiltOffsetX;
+          const y = cy + offsetY + bob;
+
+          arCtx.save();
+          arCtx.shadowColor = obj.color;
+          arCtx.shadowBlur = 35;
+          arCtx.font = "72px 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+          arCtx.textAlign = "center";
+          arCtx.textBaseline = "middle";
+          arCtx.fillText(obj.emoji, x, y);
+          arCtx.restore();
+        } else {
+          const turnRight = diff > 0;
+          const distance = Math.abs(diff);
+          const arrow = turnRight ? "➡️" : "⬅️";
+          const dirText = turnRight ? "Tourne à droite" : "Tourne à gauche";
+          const tempText = distance < halfFov + 20 ? "tu chauffes !" : distance < 100 ? "tu te réchauffes…" : "c'est encore loin…";
+          arSearchHintEl.textContent = `${arrow} ${dirText} — ${tempText}`;
+          arSearchHintEl.classList.remove("hidden");
+        }
+      } catch (e) {
+        // Never let an unexpected error silently freeze the loop (leaving the
+        // player staring at nothing with no explanation) — surface it and
+        // unlock the found button so the game can still continue.
+        console.error("Erreur dans la boucle du scanner AR", e);
+        arErrorEl.textContent = "Erreur du scanner (" + e.message + "). Tu peux quand même marquer la cache comme trouvée.";
+        arErrorEl.classList.remove("hidden");
+        setArFoundLocked(false);
       }
 
       state.scanner.rafId = requestAnimationFrame(frame);
@@ -753,7 +818,7 @@
   function closeScanner() {
     if (state.scanner.rafId) cancelAnimationFrame(state.scanner.rafId);
     if (state.scanner.stream) state.scanner.stream.getTracks().forEach((t) => t.stop());
-    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null };
+    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null, headingCategory: null };
     arVideoEl.srcObject = null;
     arScannerEl.classList.add("hidden");
     setArFoundLocked(false);
