@@ -151,16 +151,21 @@ disponible (permission refusée, appareil sans caméra), un message
 s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable, puisqu'il
 n'y a alors aucun moyen de chercher visuellement.
 
-L'app ne fait confiance qu'à un cap **réellement référencé au nord**
-(fourni par `webkitCompassHeading` sur iOS, ou par un évènement marqué
-`absolute: true`/`deviceorientationabsolute` sur Android/Chrome) : dès
-qu'une lecture de ce type a été vue, les éventuelles lectures non-absolues
-ultérieures (qui ne représentent qu'une rotation relative à la position de
-départ du téléphone, pas un vrai cap boussole) sont ignorées pour ne pas
-"écraser" la bonne valeur par une fausse. Un petit indicateur discret
-(`🧭 143° → 🎯 210° (boussole)`) est affiché en haut du scanner caméra,
-juste pour diagnostiquer facilement un souci de boussole sur un appareil
-donné si jamais l'objet reste introuvable.
+L'app privilégie un cap **réellement référencé au nord** (fourni par
+`webkitCompassHeading` sur iOS, ou par un évènement marqué
+`absolute: true`/`deviceorientationabsolute` sur Android/Chrome) : tant que
+ce type de lecture arrive activement (dans la dernière seconde), les
+lectures non-absolues concurrentes (qui ne représentent qu'une rotation
+relative à la position de départ du téléphone, pas un vrai cap boussole)
+sont ignorées pour ne pas "écraser" la bonne valeur par une fausse. Mais
+dès que les lectures absolues s'arrêtent ou restent bloquées (boussole mal
+calibrée sur certains appareils), l'app se rabat automatiquement sur le
+cap relatif pour que la rotation du téléphone continue toujours à faire
+quelque chose, plutôt que de rester figée indéfiniment sur une seule
+mauvaise lecture. Un petit indicateur discret
+(`🧭 143° → 🎯 210° (boussole)` ou `(boussole non calibrée)`) est affiché en
+haut du scanner caméra, juste pour diagnostiquer facilement un souci de
+boussole sur un appareil donné si jamais l'objet reste introuvable.
 
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que

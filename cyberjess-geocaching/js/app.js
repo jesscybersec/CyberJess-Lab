@@ -9,7 +9,7 @@
     heading: null, // degrees, 0 = north — falls back to the simulated slider when no real compass exists
     realHeading: null, // degrees from the actual device compass, always tracked so a real phone's
     // rotation works for the AR search even while position is being simulated
-    hasAbsoluteHeading: false, // true once a genuine true-north reading has ever been seen
+    lastAbsoluteHeadingAt: null, // timestamp of the last true-north reading, or null if none yet
     tiltBeta: null, // device front-back tilt, used for AR parallax
     tiltGamma: null, // device left-right tilt, used for AR parallax
     targetId: null,
@@ -279,6 +279,7 @@
   }
 
   // ---------- Device orientation (compass heading) ----------
+  const ABSOLUTE_HEADING_FRESHNESS_MS = 1000;
   const enableOrientationBtn = document.getElementById("enableOrientationBtn");
 
   function handleOrientation(evt) {
@@ -291,23 +292,29 @@
     if (typeof evt.webkitCompassHeading === "number") {
       // iOS Safari: always a true, north-referenced compass heading.
       state.realHeading = evt.webkitCompassHeading;
-      state.hasAbsoluteHeading = true;
+      state.lastAbsoluteHeadingAt = performance.now();
       renderRadar();
       return;
     }
 
     if (evt.alpha === null) return;
     const isAbsolute = evt.absolute === true || evt.type === "deviceorientationabsolute";
+    const now = performance.now();
+    const absoluteIsFresh =
+      state.lastAbsoluteHeadingAt !== null && now - state.lastAbsoluteHeadingAt < ABSOLUTE_HEADING_FRESHNESS_MS;
     // A plain "deviceorientation" event without absolute=true is relative to
     // whatever direction the phone happened to face when the listener was
     // attached, NOT true north — treating it as a compass bearing would make
     // the AR search bearing unsolvable no matter how the phone is rotated.
-    // Once we've ever seen a genuine absolute reading, ignore non-absolute
-    // ones entirely so they can't clobber it; only fall back to them if the
-    // device never reports absolute data at all.
-    if (!isAbsolute && state.hasAbsoluteHeading) return;
+    // Ignore a non-absolute reading only while genuine absolute data is
+    // actively flowing (recency-based, not a permanent lock): this stops a
+    // stray relative sample interleaved with real compass data from
+    // clobbering it, but still self-heals and falls back to relative
+    // tracking if absolute data ever stops arriving or gets stuck, instead
+    // of freezing the heading forever on a single bad reading.
+    if (!isAbsolute && absoluteIsFresh) return;
     state.realHeading = (360 - evt.alpha + 360) % 360;
-    if (isAbsolute) state.hasAbsoluteHeading = true;
+    if (isAbsolute) state.lastAbsoluteHeadingAt = now;
     renderRadar();
   }
 
@@ -689,8 +696,11 @@
       // Visible diagnostic readout — makes any future compass-sourcing issue
       // (e.g. relative vs. true-north heading) immediately obvious on-device
       // instead of requiring remote back-and-forth to debug.
+      const absoluteIsFresh =
+        state.lastAbsoluteHeadingAt !== null &&
+        performance.now() - state.lastAbsoluteHeadingAt < ABSOLUTE_HEADING_FRESHNESS_MS;
       const source = state.realHeading !== null
-        ? (state.hasAbsoluteHeading ? "boussole" : "boussole non calibrée")
+        ? (absoluteIsFresh ? "boussole" : "boussole non calibrée")
         : "simulation";
       arDebugReadoutEl.textContent = hasHeading
         ? `🧭 ${Math.round(currentHeading)}° → 🎯 ${Math.round(state.scanner.objectBearing)}° (${source})`
