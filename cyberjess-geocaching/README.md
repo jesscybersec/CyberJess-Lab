@@ -174,14 +174,18 @@ bouton "trouvé" reste utilisable pour ne jamais bloquer la partie.
 La permission d'accès à la boussole (nécessaire sur iOS 13+) est demandée
 automatiquement dès l'ouverture du scanner, en plus du petit bouton
 **"Activer la boussole"** dans l'onglet Radar — donc pas besoin de l'avoir
-repéré au préalable. Cette demande n'empêche jamais le scanner de s'ouvrir :
+repéré au préalable. La caméra et la recherche n'apparaissent qu'une fois
+cette demande réglée (acceptée, refusée, ou expirée après 3 secondes) :
 sur certaines configurations iOS (notamment une app **ajoutée à l'écran
-d'accueil**), l'invite système peut ne jamais s'afficher du tout, donc la
-demande a une limite de temps de 3 secondes après laquelle le scanner
-continue de fonctionner normalement (sans vraie boussole) plutôt que de
-rester bloqué indéfiniment à attendre une réponse qui ne viendra jamais. Et
-si le **mode simulation** est actif sans qu'aucune vraie boussole ne réponde
-(permission refusée, expirée, ou test sur un appareil sans capteur), un
+d'accueil**), l'invite système peut ne jamais s'afficher du tout, donc
+cette limite de 3 secondes garantit que le scanner ne reste jamais bloqué
+indéfiniment à attendre une réponse qui ne viendra jamais — mais elle
+garantit surtout que si l'invite système apparaît vraiment, elle est
+répondue avant que les boutons du scanner (comme "trouvé") ne deviennent
+utilisables, pour qu'une boîte de dialogue du système ne puisse jamais
+intercepter un appui destiné à l'app. Et si le **mode simulation** est
+actif sans qu'aucune vraie boussole ne réponde (permission refusée,
+expirée, ou test sur un appareil sans capteur), un
 petit cadran **"Tourner ⟲ / ⟳"** apparaît directement dans le scanner : il
 permet de faire pivoter le cap simulé sans avoir à sortir du plein écran
 pour aller toucher le curseur de l'onglet Radar (qui, lui, est caché
