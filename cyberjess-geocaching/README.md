@@ -128,21 +128,28 @@ l'appuyant, la caméra arrière s'ouvre en plein écran et il faut vraiment
   sans la rendre frustrante.
 - Une fois l'objet dans le champ, il flotte en surimpression du flux
   caméra avec un léger effet de profondeur qui réagit aux mouvements du
-  téléphone. Appuie alors sur **"✅ J'ai trouvé l'objet !"** pour marquer
-  le checkpoint comme trouvé (ce bouton reste toujours utilisable, même
-  sans avoir localisé l'objet, pour ne jamais bloquer la partie).
+  téléphone, et le bouton **"✅ J'ai trouvé l'objet !"** se déverrouille —
+  il reste grisé (🔒 Cherche encore l'objet…) tant que l'objet n'a pas été
+  repéré, pour que ce soit une vraie recherche et pas juste une formalité.
 
 **Important à savoir sur cette réalité augmentée légère** : cette recherche
-repose sur le cap de la boussole du téléphone (ou sur le curseur de cap du
-mode simulation, pratique pour tester sans bouger) — sans capteur
-d'orientation disponible, l'objet reste affiché au centre par défaut.
-L'objet n'est pas non plus "ancré" à un point precis du décor visuel
-(ce qui demanderait un suivi spatial de type SLAM/WebXR, peu fiable
-hors-ligne et beaucoup plus lourd à développer) : c'est une direction à
-trouver, pas un point fixe dans l'image. Tout fonctionne 100% sur
-l'appareil, sans réseau ni bibliothèque externe. Si la caméra n'est pas
+repose sur le cap de la vraie boussole du téléphone — celle-ci a toujours
+la priorité, même si le mode simulation est actif pour la position (donc
+tourner physiquement le téléphone fonctionne normalement pendant une
+partie simulée). Le curseur de cap du mode simulation ne sert de secours
+que quand aucun capteur d'orientation réel n'est disponible du tout (par
+exemple en testant sur un ordinateur sans capteur). Dans ce cas précis
+(aucun capteur ni réel ni simulé), l'objet reste affiché au centre par
+défaut et le bouton "trouvé" reste utilisable directement, pour ne jamais
+bloquer la partie sur un appareil qui ne peut pas faire cette recherche.
+L'objet n'est pas non plus "ancré" à un point precis du décor visuel (ce
+qui demanderait un suivi spatial de type SLAM/WebXR, peu fiable hors-ligne
+et beaucoup plus lourd à développer) : c'est une direction à trouver, pas
+un point fixe dans l'image. Tout fonctionne 100% sur l'appareil, sans
+réseau ni bibliothèque externe. Si la caméra elle-même n'est pas
 disponible (permission refusée, appareil sans caméra), un message
-s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable.
+s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable, puisqu'il
+n'y a alors aucun moyen de chercher visuellement.
 
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
@@ -405,6 +412,15 @@ Dans l'onglet **💾 Données** :
   accordée au navigateur/à l'app dans les réglages du téléphone. En
   attendant, le bouton "J'ai trouvé l'objet !" reste utilisable pour ne pas
   bloquer la partie.
+- **L'objet virtuel n'apparaît jamais dans le scan caméra, peu importe où
+  je tourne le téléphone** : la vraie boussole du téléphone est toujours
+  utilisée en priorité pour cette recherche, donc ce cas signale
+  généralement que le navigateur n'a pas accès à l'orientation de
+  l'appareil — vérifie que la permission boussole a bien été accordée
+  (bouton "Activer la boussole" dans l'onglet Radar sur iPhone), ou
+  qu'aucun bloqueur de capteurs n'est actif. Sans capteur d'orientation du
+  tout, l'objet s'affiche au centre par défaut et le bouton "trouvé" reste
+  utilisable directement.
 
 ## Développement local
 
