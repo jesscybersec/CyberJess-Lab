@@ -151,6 +151,17 @@ disponible (permission refusée, appareil sans caméra), un message
 s'affiche et le bouton "J'ai trouvé l'objet !" reste utilisable, puisqu'il
 n'y a alors aucun moyen de chercher visuellement.
 
+L'app ne fait confiance qu'à un cap **réellement référencé au nord**
+(fourni par `webkitCompassHeading` sur iOS, ou par un évènement marqué
+`absolute: true`/`deviceorientationabsolute` sur Android/Chrome) : dès
+qu'une lecture de ce type a été vue, les éventuelles lectures non-absolues
+ultérieures (qui ne représentent qu'une rotation relative à la position de
+départ du téléphone, pas un vrai cap boussole) sont ignorées pour ne pas
+"écraser" la bonne valeur par une fausse. Un petit indicateur discret
+(`🧭 143° → 🎯 210° (boussole)`) est affiché en haut du scanner caméra,
+juste pour diagnostiquer facilement un souci de boussole sur un appareil
+donné si jamais l'objet reste introuvable.
+
 Pour choisir un objet virtuel sur une cache : le champ **"Objet virtuel à
 scanner"** est disponible aussi bien dans le formulaire **➕ Ajouter** que
 dans le formulaire de checkpoint du mode Maître du jeu.
@@ -427,7 +438,12 @@ Dans l'onglet **💾 Données** :
   (bouton "Activer la boussole" dans l'onglet Radar sur iPhone), ou
   qu'aucun bloqueur de capteurs n'est actif. Sans capteur d'orientation du
   tout, l'objet s'affiche au centre par défaut et le bouton "trouvé" reste
-  utilisable directement.
+  utilisable directement. Regarde le petit texte `🧭 ...° → 🎯 ...°` en haut
+  du scanner : s'il affiche "aucune donnée de boussole", le téléphone ne
+  fournit tout simplement aucun cap ; s'il affiche un cap qui ne bouge pas
+  du tout quand tu tournes physiquement l'appareil, redémarre le navigateur
+  (certains navigateurs Android ne (ré)activent le magnétomètre qu'après un
+  redémarrage complet une fois la permission accordée).
 
 ## Développement local
 
