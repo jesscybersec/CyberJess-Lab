@@ -658,6 +658,16 @@
     return state.caches.find((c) => c.id === state.targetId) || null;
   }
 
+  // Tracks the last scan-gate HTML actually written to the DOM, so renderRadar
+  // (called on every single compass/orientation tick -- potentially dozens of
+  // times per second on a real device) doesn't destroy and recreate the
+  // "Scanner"/"Cache suivante" button on every call. Rewriting that subtree
+  // via innerHTML mid-tap silently swallows the tap: the element the user's
+  // finger landed on no longer exists in the DOM by the time the gesture
+  // completes, so neither the browser's own click nor our touch fallback has
+  // anything live to fire on.
+  let lastScanGateHtml = null;
+
   function renderRadar() {
     drawCompassFace();
     const target = getTarget();
@@ -669,6 +679,8 @@
       radarInfoEl.innerHTML = target
         ? '<p class="muted">En attente du signal GPS…</p>'
         : '<p class="muted">Sélectionne une cache dans l\'onglet "Caches" pour la pointer ici.</p>';
+      radarInfoEl.dataset.renderedTargetId = "";
+      lastScanGateHtml = null;
       return;
     }
 
@@ -691,14 +703,27 @@
       effectiveHeading !== null ? (bearingToTarget - effectiveHeading + 360) % 360 : bearingToTarget;
     drawArrow(arrowAngle);
 
-    radarInfoEl.innerHTML = `
-      <div class="target-name">🎯 ${escapeHtml(target.name)}</div>
-      <div class="target-distance">${Geo.formatDistance(distance)}</div>
-      <div class="muted">cap: ${Math.round(bearingToTarget)}°${
-      effectiveHeading === null ? " (boussole non calibrée — cap par rapport au nord)" : ""
-    }</div>
-      ${renderScanGate(target, distance)}
-    `;
+    if (radarInfoEl.dataset.renderedTargetId !== target.id) {
+      radarInfoEl.innerHTML = `
+        <div class="target-name"></div>
+        <div class="target-distance"></div>
+        <div class="muted radar-cap"></div>
+        <div class="scan-gate-slot"></div>
+      `;
+      radarInfoEl.dataset.renderedTargetId = target.id;
+      lastScanGateHtml = null; // force the scan-gate slot below to fill in
+    }
+
+    radarInfoEl.querySelector(".target-name").textContent = `🎯 ${target.name}`;
+    radarInfoEl.querySelector(".target-distance").textContent = Geo.formatDistance(distance);
+    radarInfoEl.querySelector(".radar-cap").textContent =
+      `cap: ${Math.round(bearingToTarget)}°${effectiveHeading === null ? " (boussole non calibrée — cap par rapport au nord)" : ""}`;
+
+    const scanGateHtml = renderScanGate(target, distance);
+    if (scanGateHtml !== lastScanGateHtml) {
+      radarInfoEl.querySelector(".scan-gate-slot").innerHTML = scanGateHtml;
+      lastScanGateHtml = scanGateHtml;
+    }
   }
 
   let proximityAlertedCacheId = null;
