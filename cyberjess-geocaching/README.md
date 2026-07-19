@@ -500,7 +500,10 @@ Dans l'onglet **💾 Données** :
   dans **💾 Données** et appuie sur **"🔄 Vérifier les mises à jour"** :
   l'app se recharge automatiquement si une nouvelle version est trouvée.
   Si le bouton lui-même semble ne rien faire, ferme complètement l'onglet
-  (ou l'app installée) et rouvre le lien à neuf.
+  (ou l'app installée) et rouvre le lien à neuf. L'onglet **💾 Données**
+  affiche aussi un numéro de version (`Version : v20`, par exemple) juste
+  sous ce bouton — utile pour confirmer rapidement si un appareil donné a
+  bien reçu une mise à jour donnée, sans avoir à deviner.
 - **Le bouton "Scanner la zone" n'apparaît pas** : il ne s'affiche que si le
   checkpoint ciblé a un objet virtuel assigné et que tu es à moins de 30 m
   (la distance restante est affichée en attendant).
