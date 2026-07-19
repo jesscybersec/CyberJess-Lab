@@ -176,7 +176,7 @@
       .join("");
   }
 
-  quizChoicesEl.addEventListener("click", (evt) => {
+  function handleQuizChoiceTap(evt) {
     const btn = evt.target.closest("button[data-choice]");
     if (!btn || !state.quiz) return;
 
@@ -202,9 +202,24 @@
     quizFeedbackEl.classList.remove("hidden");
     quizNextBtnEl.classList.remove("hidden");
     quizNextBtnEl.textContent = quiz.currentIndex + 1 < quiz.questions.length ? "Question suivante" : "Terminer";
-  });
+  }
+  // Delegated: quizChoicesEl's children are recreated per question, so the
+  // listener lives on the stable parent. touchend is bound the same way as
+  // click (see bindTap) since some iOS browser wrappers can swallow the
+  // derived click event in modals too, not just over the AR camera view.
+  quizChoicesEl.addEventListener("click", handleQuizChoiceTap);
+  quizChoicesEl.addEventListener(
+    "touchend",
+    (evt) => {
+      const btn = evt.target.closest("button[data-choice]");
+      if (!btn || btn.disabled) return;
+      evt.preventDefault();
+      handleQuizChoiceTap(evt);
+    },
+    { passive: false }
+  );
 
-  quizNextBtnEl.addEventListener("click", () => {
+  function handleQuizNextTap() {
     if (!state.quiz) return;
     state.quiz.currentIndex += 1;
     if (state.quiz.currentIndex < state.quiz.questions.length) {
@@ -212,9 +227,9 @@
     } else {
       closeQuiz();
     }
-  });
-
-  quizSkipBtnEl.addEventListener("click", closeQuiz);
+  }
+  bindTap(quizNextBtnEl, handleQuizNextTap);
+  bindTap(quizSkipBtnEl, closeQuiz);
 
   function closeQuiz() {
     const cacheId = state.quiz ? state.quiz.cacheId : null;
