@@ -358,31 +358,57 @@
   // button itself call this, so the prompt also appears right when the
   // search actually needs it, instead of relying solely on a button a player
   // testing via simulation might never notice or think to tap.
+  //
+  // On some iOS setups (notably a home-screen-installed PWA, which is
+  // exactly what this app's own install instructions encourage) the native
+  // permission prompt can fail to appear at all and the promise just hangs
+  // forever. A timeout guarantees this call always settles either way, so
+  // nothing that depends on it (like opening the AR scanner) can ever be
+  // left stuck waiting on a prompt the user has no way to answer.
+  const ORIENTATION_PERMISSION_TIMEOUT_MS = 3000;
   let orientationPermissionState = "unrequested"; // "unrequested" | "granted" | "denied" | "unsupported"
-  async function ensureOrientationPermission() {
-    if (typeof DeviceOrientationEvent === "undefined") {
-      orientationPermissionState = "unsupported";
-      return orientationPermissionState;
-    }
-    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-      // Android and most non-iOS browsers don't gate this behind a prompt.
-      if (!state.orientationEnabled) startOrientation();
-      orientationPermissionState = "granted";
-      return orientationPermissionState;
-    }
-    if (orientationPermissionState === "granted") return orientationPermissionState;
-    try {
-      const result = await DeviceOrientationEvent.requestPermission();
-      orientationPermissionState = result; // "granted" or "denied"
-      if (result === "granted") {
-        startOrientation();
-        enableOrientationBtn.classList.add("hidden");
+  let orientationPermissionRequestPromise = null; // in-flight request, if any, to avoid double-prompting
+  function ensureOrientationPermission() {
+    if (orientationPermissionRequestPromise) return orientationPermissionRequestPromise;
+
+    orientationPermissionRequestPromise = (async () => {
+      if (typeof DeviceOrientationEvent === "undefined") {
+        orientationPermissionState = "unsupported";
+        return orientationPermissionState;
       }
-    } catch (e) {
-      console.error(e);
-      orientationPermissionState = "denied";
-    }
-    return orientationPermissionState;
+      if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+        // Android and most non-iOS browsers don't gate this behind a prompt.
+        if (!state.orientationEnabled) startOrientation();
+        orientationPermissionState = "granted";
+        return orientationPermissionState;
+      }
+      if (orientationPermissionState === "granted") return orientationPermissionState;
+      try {
+        const result = await Promise.race([
+          DeviceOrientationEvent.requestPermission(),
+          new Promise((resolve) => setTimeout(() => resolve("timeout"), ORIENTATION_PERMISSION_TIMEOUT_MS)),
+        ]);
+        if (result === "timeout") {
+          console.error("La demande de permission boussole n'a pas répondu à temps.");
+          orientationPermissionState = "denied";
+        } else {
+          orientationPermissionState = result; // "granted" or "denied"
+          if (result === "granted") {
+            startOrientation();
+            enableOrientationBtn.classList.add("hidden");
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        orientationPermissionState = "denied";
+      }
+      return orientationPermissionState;
+    })();
+
+    orientationPermissionRequestPromise.finally(() => {
+      orientationPermissionRequestPromise = null;
+    });
+    return orientationPermissionRequestPromise;
   }
 
   if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
@@ -712,8 +738,11 @@
     // Ask for the compass permission right when it's actually needed, from
     // this same click gesture — a player testing via simulation, or anyone
     // who missed the small "Activer la boussole" button in the Radar tab,
-    // still gets prompted at the moment the search starts.
-    await ensureOrientationPermission();
+    // still gets prompted at the moment the search starts. Deliberately NOT
+    // awaited: the scanner (camera + fallback search) must open immediately
+    // either way and never sit blocked on a permission prompt that, on some
+    // iOS setups, can fail to appear at all.
+    ensureOrientationPermission();
     if (state.simulation.active && state.heading === null) state.heading = 0;
 
     try {
