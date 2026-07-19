@@ -1766,6 +1766,19 @@
     alert("Vérification lancée. S'il y a une nouvelle version, l'app va se recharger automatiquement dans quelques secondes.");
   });
 
+  // Reads the version straight from the active Cache Storage entry (not a
+  // hardcoded string in this file) so it can never silently drift out of
+  // sync with what's actually installed -- letting a player read back an
+  // exact version number is far more reliable than guessing whether an
+  // update really landed after a bug report.
+  if ("caches" in window) {
+    const appVersionLabelEl = document.getElementById("appVersionLabel");
+    caches.keys().then((keys) => {
+      const match = keys.find((k) => k.startsWith("cyberjess-geocaching-"));
+      appVersionLabelEl.textContent = match ? `Version : ${match.replace("cyberjess-geocaching-", "")}` : "Version : inconnue (aucun cache actif)";
+    });
+  }
+
   // ---------- Init ----------
   renderCacheList();
   renderRadar();
