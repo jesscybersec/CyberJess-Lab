@@ -28,6 +28,7 @@
       baselineBeta: null,
       objectBearing: null,
       headingCategory: null, // the locked heading source for the current scan session
+      frozen: false, // true once the object has been spotted and the camera view is held still
     },
     score: ScoreStore.load(),
     quiz: null, // in-progress quiz: {cacheId, difficultyLabel, questions, currentIndex}
@@ -735,6 +736,7 @@
     state.scanner.cacheId = cache.id;
     state.scanner.baselineBeta = state.tiltBeta;
     state.scanner.headingCategory = null; // pick fresh for this session, see runArLoop
+    state.scanner.frozen = false;
     // The object is "hidden" at a random compass bearing: with a real or
     // simulated heading available, finding it means physically panning the
     // camera around (or dragging the simulated heading slider) until it
@@ -869,7 +871,19 @@
         setArFoundLocked(!inView);
 
         if (inView) {
-          arSearchHintEl.classList.add("hidden");
+          // Frozen on the very first frame the object is spotted: the video
+          // is paused (its last frame stays on screen, like a photo) and the
+          // search loop stops entirely, instead of continuing to redraw and
+          // re-evaluate the heading every frame while the player decides
+          // whether to tap "J'ai trouvé l'objet !". This makes the moment of
+          // discovery unambiguous — a still, held frame with a clear next
+          // step — rather than a constantly-live camera view where it isn't
+          // obvious anything has actually been "found" yet.
+          const justFroze = !state.scanner.frozen;
+          if (justFroze) {
+            state.scanner.frozen = true;
+            arVideoEl.pause();
+          }
 
           const gamma = state.tiltGamma || 0;
           const betaDelta = state.tiltBeta !== null && state.scanner.baselineBeta !== null
@@ -878,7 +892,7 @@
           const bearingOffsetX = hasHeading ? (diff / halfFov) * maxOffset : 0;
           const tiltOffsetX = Math.max(-30, Math.min(30, -gamma * 1.2));
           const offsetY = Math.max(-50, Math.min(50, -betaDelta * 2));
-          const bob = Math.sin(timestamp / 500) * 10;
+          const bob = 0; // no more idle bobbing once captured -- the frame is held still
 
           const x = cx + bearingOffsetX + tiltOffsetX;
           const y = cy + offsetY + bob;
@@ -891,6 +905,9 @@
           arCtx.textBaseline = "middle";
           arCtx.fillText(obj.emoji, x, y);
           arCtx.restore();
+
+          arSearchHintEl.textContent = "📸 Objet capturé ! Appuie sur « J'ai trouvé l'objet ! »";
+          arSearchHintEl.classList.remove("hidden");
         } else {
           const turnRight = diff > 0;
           const distance = Math.abs(diff);
@@ -910,7 +927,12 @@
         setArFoundLocked(false);
       }
 
-      state.scanner.rafId = requestAnimationFrame(frame);
+      // Once the object has been captured, the search loop itself stops
+      // (no more requestAnimationFrame) so the held frame truly stays still
+      // instead of continuing to redraw every frame for no purpose.
+      if (!state.scanner.frozen) {
+        state.scanner.rafId = requestAnimationFrame(frame);
+      }
     }
 
     state.scanner.rafId = requestAnimationFrame(frame);
@@ -919,7 +941,8 @@
   function closeScanner() {
     if (state.scanner.rafId) cancelAnimationFrame(state.scanner.rafId);
     if (state.scanner.stream) state.scanner.stream.getTracks().forEach((t) => t.stop());
-    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null, headingCategory: null };
+    state.scanner = { stream: null, cacheId: null, rafId: null, baselineBeta: null, objectBearing: null, headingCategory: null, frozen: false };
+    arVideoEl.pause();
     arVideoEl.srcObject = null;
     arScannerEl.classList.add("hidden");
     setArFoundLocked(false);
