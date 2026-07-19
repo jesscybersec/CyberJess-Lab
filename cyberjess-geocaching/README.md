@@ -238,6 +238,12 @@ personnalisé** (que ce soit via la liste des caches ou via le scan caméra),
   associé) ne déclenchent pas de quiz — il n'y a pas de niveau à leur
   associer.
 
+Comme les boutons du scanner caméra, les boutons du quiz (réponses,
+"Question suivante", "Passer le quiz") répondent à la fois au clic
+classique et directement au toucher (`touchend`), pour la même raison :
+certains navigateurs iOS peuvent, dans de rares cas, avaler l'évènement
+clic dérivé d'un appui tactile dans une fenêtre modale.
+
 Le score cumulé est **visible uniquement dans l'onglet 🎓 Maître du jeu**,
 sous la liste des trajets : les joueurs ne le voient nulle part ailleurs
 dans l'app. Le bouton **"🗑️ Réinitialiser le score"** permet de repartir à
