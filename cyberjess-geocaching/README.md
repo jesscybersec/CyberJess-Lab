@@ -504,6 +504,15 @@ Dans l'onglet **💾 Données** :
   affiche aussi un numéro de version (`Version : v20`, par exemple) juste
   sous ce bouton — utile pour confirmer rapidement si un appareil donné a
   bien reçu une mise à jour donnée, sans avoir à deviner.
+- **Un bouton sur le radar (ex. "Cache suivante") ne réagit pas, alors que
+  le même genre de bouton fonctionne ailleurs dans l'app** : l'onglet Radar
+  se redessine à chaque nouvelle lecture de boussole, ce qui peut arriver
+  des dizaines de fois par seconde sur un vrai téléphone. Reconstruire tout
+  le bloc à chaque fois (y compris ses boutons) pouvait faire disparaître
+  puis réapparaître l'élément exact que le doigt vient de toucher, entre le
+  début et la fin d'un appui — l'app ne redessine donc plus que le texte
+  qui change réellement (distance, cap) sans toucher aux boutons tant que
+  leur contenu n'a pas besoin de changer.
 - **Le bouton "Scanner la zone" n'apparaît pas** : il ne s'affiche que si le
   checkpoint ciblé a un objet virtuel assigné et que tu es à moins de 30 m
   (la distance restante est affichée en attendant).
